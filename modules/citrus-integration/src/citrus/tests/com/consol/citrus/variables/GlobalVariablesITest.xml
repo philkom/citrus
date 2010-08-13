@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spring:beans xmlns="http://www.citrusframework.org/schema/testcase" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd http://www.citrusframework.org/schema/testcase http://www.citrusframework.org/schema/testcase/citrus-testcase.xsd">
+    <testcase name="GlobalVariablesITest">
+		<meta-info>
+			<author>Philipp Komninos</author>
+			<creationdate>2010-08-13</creationdate>
+			<status>FINAL</status>
+			<last-updated-by>Philipp Komninos</last-updated-by>
+			<last-updated-on>2010-08-13T00:00:00</last-updated-on>
+		</meta-info>
+		
+        <description>
+			Test the use of global variables with global variables as variable values.
+			com.consol.citrus.variables.global-variables.properties is loaded with citrus-context.xml
+			and the variables are printed with this test. 
+		</description>
+		
+        <actions>
+            <echo>
+                <message>Value of global variable "firstname": ${firstname}</message>
+            </echo>
+            <echo>
+                <message>Value of global variable "lastname": ${lastname}</message>
+            </echo>
+            <echo>
+                <message>Value of global variable "text": ${text}</message>
+            </echo>
+        </actions>
+    </testcase>
+</spring:beans>

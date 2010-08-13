@@ -20,6 +20,7 @@
 package com.consol.citrus.variable;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -79,8 +80,19 @@ public class GlobalVariablesPropertyLoader implements InitializingBean {
                         if (globalVariables.getVariables().containsKey(key) && log.isDebugEnabled()) {
                             log.debug("Overwriting property " + key + " old value:" + globalVariables.getVariables().get(key) + " new value:" + props.getProperty(key));
                         }
+                        
+                        String value = props.getProperty(key);
 
-                        globalVariables.getVariables().put(key, props.getProperty(key));
+                        if(VariableUtils.containsVariableName(value)){
+                        	try {
+								value = VariableUtils.replaceGlobalVariablesInString(value, globalVariables);
+							} catch (ParseException e) {
+								log.error("Error while parsing global variable: " + value);
+								throw new CitrusRuntimeException(e);
+							}
+                        }
+                        
+                        globalVariables.getVariables().put(key, value);
                     }
                 }
             }

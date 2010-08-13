@@ -52,6 +52,7 @@
         <property name="propertyFiles">
             <list>
                 <value>classpath:citrus-variable.properties</value>
+                <value>classpath:com/consol/citrus/variables/global-variables.properties</value>
             </list>
         </property>
     </bean>

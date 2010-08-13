@@ -45,6 +45,23 @@ public class VariableUtils {
     }
     
     /**
+     * Checks whether a given expression contains a variable name.
+     * @param expression
+     * @return flag true/false
+     */
+    public static boolean containsVariableName(final String expression) {
+        if (expression == null || expression.length() == 0) {
+            return false;
+        }
+
+        if (expression.contains(CitrusConstants.VARIABLE_PREFIX) && expression.substring(expression.indexOf((CitrusConstants.VARIABLE_PREFIX))).contains(Character.toString(CitrusConstants.VARIABLE_SUFFIX))) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    /**
      * Checks whether a given expression is a variable name.
      * @param expression
      * @return flag true/false
@@ -121,6 +138,88 @@ public class VariableUtils {
            }
 
            final String value = context.getVariable(variableNameBuf.toString());
+           if (value == null) {
+               throw new NoSuchVariableException("Variable: " + variableNameBuf.toString() + " could not be found");
+           }
+
+           newStr.append(str.substring(startIndex, searchIndex));
+
+           if (enableQuoting) {
+               newStr.append("'" + value + "'");
+           } else {
+               newStr.append(value);
+           }
+
+           startIndex = curIndex;
+
+           variableNameBuf = new StringBuffer();
+           isVarComplete = false;
+       }
+
+       newStr.append(str.substring(startIndex));
+
+       return newStr.toString();
+   }
+   /**
+    * Replace all variable expression in a string with 
+    * its respective values of global variables.
+    * @param str
+    * @param globalVariables
+    * @return
+    * @throws ParseException
+    */
+   public static String replaceGlobalVariablesInString(final String str, GlobalVariables globalVariables) throws ParseException {
+       return replaceGlobalVariablesInString(str, globalVariables, false);
+   }
+
+   /**
+    * Replace all variable expression in a string with
+    * its respective value of global variables. Variable values are enclosed with quotes
+    * if enabled.
+    * 
+    * @param str
+    * @param globalVariables
+    * @param enableQuoting
+    * @return
+    * @throws ParseException
+    */
+   public static String replaceGlobalVariablesInString(final String str, GlobalVariables globalVariables, boolean enableQuoting) throws ParseException {
+       StringBuffer newStr = new StringBuffer();
+
+       boolean isVarComplete = false;
+
+       StringBuffer variableNameBuf = new StringBuffer();
+
+       int startIndex = 0;
+       int curIndex;
+       int searchIndex;
+
+       while ((searchIndex = str.indexOf(CitrusConstants.VARIABLE_PREFIX, startIndex)) != -1) {
+           int control = 0;
+           isVarComplete = false;
+
+           curIndex = searchIndex + CitrusConstants.VARIABLE_PREFIX.length();
+
+           while (curIndex < str.length() && !isVarComplete) {
+               if (str.indexOf(CitrusConstants.VARIABLE_PREFIX, curIndex) == curIndex) {
+                   control++;
+               }
+
+               if ((!Character.isJavaIdentifierPart(str.charAt(curIndex)) && (str.charAt(curIndex) == CitrusConstants.VARIABLE_SUFFIX)) || (curIndex+1 == str.length())) {
+                   if (control == 0) {
+                       isVarComplete = true;
+                   } else {
+                       control--;
+                   }
+               }
+
+               if (!isVarComplete) {
+                   variableNameBuf.append(str.charAt(curIndex));
+               }
+               ++curIndex;
+           }
+
+           final String value = globalVariables.getVariables().get(variableNameBuf.toString());
            if (value == null) {
                throw new NoSuchVariableException("Variable: " + variableNameBuf.toString() + " could not be found");
            }
