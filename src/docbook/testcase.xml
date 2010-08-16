@@ -161,6 +161,18 @@
         
         <para>Again we just place a Spring bean in the application context and everything is done. Citrus loads the properties as name-value-pairs
         which represent the global variables.</para>
+        
+        <note>
+        	<para>When defining new global variables in external property files, it is possible to use previously defined global variables
+        	in the values, like in this example:</para>
+        </note>
+        
+        <programlisting>
+        firstname=Mickey
+        lastname=Mouse
+        text=Hello ${firstname} ${lastname}!
+        </programlisting>
+        
     </section>
     
     <section id="testcase-actions">
