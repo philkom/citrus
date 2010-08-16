@@ -26,11 +26,14 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 
 import com.consol.citrus.actions.AbstractTestAction;
 import com.consol.citrus.context.TestContext;
 import com.consol.citrus.exceptions.CitrusRuntimeException;
+import com.consol.citrus.util.FileUtils;
 
 /**
  * Action executes groovy scripts either specified inline or from external file resource.
@@ -46,11 +49,26 @@ public class GroovyAction extends AbstractTestAction {
     /** External script file resource */
     private Resource fileResource;
     
+    /** Class definition, for Groovy scripts, implements the ScriptExecutor Interface
+     * for the execute method, which will be invoked, providing the Testcontext */
+    private static final String GROOVY_CLASS_DEFINITION = 
+    	"import com.consol.citrus.*\n" +
+    	"import com.consol.citrus.variable.*\n" +
+        "import com.consol.citrus.context.TestContext\n" +
+        "import com.consol.citrus.script.GroovyAction.ScriptExecutor\n\n" +
+        "public class GScript implements ScriptExecutor {\n" +
+        "public void execute(TestContext context) {\n";
+    
     /** Executes a script using the TestContext */
     public interface ScriptExecutor {
         public void execute(TestContext context);
     }
-    
+
+    /**
+     * Logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(GroovyAction.class);
+
     /**
      * @see com.consol.citrus.TestAction#execute(TestContext)
      * @throws CitrusRuntimeException
@@ -63,29 +81,44 @@ public class GroovyAction extends AbstractTestAction {
             
             Class<?> groovyClass;
             
-            if(script != null) {
-                groovyClass = loader.parseClass(context.replaceDynamicContentInString(script));
-            } else if(fileResource != null) {
-                groovyClass = loader.parseClass(fileResource.getFile());
+            String content;
+            
+            //get the script
+            if (script != null) {
+            	content = context.replaceDynamicContentInString(script);
+            } else if (fileResource != null) {
+            	content = context.replaceDynamicContentInString(FileUtils.readToString(fileResource));
             } else {
                 throw new CitrusRuntimeException("Neither inline script nor " +
                 		"external file resource is defined for bean. " +
                 		"Can not execute groovy script.");
             }
-    
-            if(groovyClass == null) {
+            
+            //create a Groovy class with the script and instantiate an object from it
+            groovyClass = loader.parseClass(content);
+            if (groovyClass == null) {
                 throw new CitrusRuntimeException("Could not load groovy script!");    
             }
             
-            GroovyObject groovyObject;
-            groovyObject = (GroovyObject) groovyClass.newInstance();
+            GroovyObject groovyObject = (GroovyObject) groovyClass.newInstance();
             
-            if(groovyObject instanceof ScriptExecutor) {
-                ((ScriptExecutor)groovyObject).execute(context);
-            } else {
-                Object[] args = {};
-                groovyObject.invokeMethod("run", args);
+            //if there was no class, which implements ScriptExecuter, in the script:
+            //put the Groovy class definition around the script
+            if (!(groovyObject instanceof ScriptExecutor)) {
+            	//throw error if there was an own class defined in the script
+            	if (!groovyObject.getClass().getSimpleName().startsWith("script")) {
+            		throw new CitrusRuntimeException("The class " + groovyObject.getClass().getSimpleName() + 
+            				" of the Groovy-script has to implement com.consol.citrus.script.GroovyAction.ScriptExecutor" +
+            				" with the execute(Testcontext context) method");
+            	}
+            	//if there was no class defined in the script, put the class definition around 
+                groovyClass = loader.parseClass(GROOVY_CLASS_DEFINITION + content + "\n}}");
+                groovyObject = (GroovyObject) groovyClass.newInstance();
             }
+            //execute the Groovy script
+            log.info("Executing Groovy script...");
+            ((ScriptExecutor)groovyObject).execute(context);
+            log.info("Groovy test action executed successfully");
         } catch (InstantiationException e) {
             throw new CitrusRuntimeException(e);
         } catch (IllegalAccessException e) {

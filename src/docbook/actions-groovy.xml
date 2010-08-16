@@ -39,6 +39,10 @@
                   }
               ]]&gt;
           &lt;/groovy&gt;
+          &lt;groovy&gt;
+              context.setVariable(&quot;hello&quot;,&quot;Hello TestSuite&quot;)
+              println context.getVariable(&quot;hello&quot;)
+          &lt;/groovy&gt;
           &lt;groovy resource=&quot;classpath:com/consol/citrus/script/example.groovy&quot;/&gt;
       &lt;/actions&gt;
   &lt;/testcase&gt;
@@ -46,9 +50,12 @@
     
     <para>As you can see it is possible to write Groovy code directly into the test case. 
     Citrus will execute the Groovy code and handle variable references automatically. The tester 
-    is also able to write whole Groovy classes. The ScriptExecutor interface defines the execute
-    method and provides access to the TestContext and its test variables. Citrus will take care of 
-    the TestContext injection as a method parameter.</para>
+    is also able, to write whole Groovy classes. He just needs to implement the ScriptExecutor interface. 
+    This interface defines the execute method and provides access to the TestContext and its test variables. 
+    Citrus will take care of the TestContext injection as a method parameter.</para>
+    
+    <para>Since version 1.2-SNAPSHOT it is also possible, to use the TestContext without defining a new class in
+    the Groovy code.</para>
     
     <para>The last test action in our example refers to an external Groovy file resource. The external
     resource holds the Groovy code that is included into the test action chain.</para>

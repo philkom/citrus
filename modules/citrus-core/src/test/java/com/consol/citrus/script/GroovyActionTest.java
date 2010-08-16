@@ -58,4 +58,29 @@ public class GroovyActionTest extends AbstractBaseTest {
         bean.setFileResource(new FileSystemResource("some/wrong/path/test.groovy"));
         bean.execute(context);
     }
+    
+    @Test
+    public void testScriptWithClassDefinition() {
+        GroovyAction bean = new GroovyAction();
+        StringBuilder sb = new StringBuilder();
+        sb.append("import com.consol.citrus.*\n");
+        sb.append("import com.consol.citrus.variable.*\n");
+        sb.append("import com.consol.citrus.context.TestContext\n");
+        sb.append("import com.consol.citrus.script.GroovyAction.ScriptExecutor\n\n");
+        sb.append("public class GScript implements ScriptExecutor {\n");
+        sb.append("public void execute(TestContext context) {\n");
+        sb.append("context.setVariable(\"var\", \"Script with class definition test successful.\")\n");
+        sb.append("println context.getVariable(\"var\")\n");
+        sb.append("}}");
+        bean.setScript(sb.toString());
+        bean.execute(context);
+    }
+    
+    @Test
+    public void testScriptWithoutClassDefinition() {
+        GroovyAction bean = new GroovyAction();
+        bean.setScript("context.setVariable(\"var\", \"Script without class definition test successful.\")\n" +
+        		"println context.getVariable(\"var\")");
+        bean.execute(context);
+    }
 }
