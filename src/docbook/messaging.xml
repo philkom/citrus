@@ -552,7 +552,7 @@
     in Citrus with the send and receive test actions.</para>
     
     <section id="groovy-markupbuilder">
-        <title>Groovy MarkupBuilder</title>
+        <title>Groovy MarkupBuilder (message creation)</title>
         
         <para>With the Groovy MarkupBuilder the tester may define XML messages in a simple way, without using the typical XML syntax. 
         For the example we use the send action from <xref linkend="message-sending"/>, with the difference, that we use script instead of 
@@ -586,15 +586,15 @@
   &lt;/send&gt;
         </programlisting>
         
-        <para>To define a XML message with the MarkupBuilder, we use the script- in the message-tag. As you can see from the example, 
+        <para>To define a XML message with the MarkupBuilder, we use the script-tag inside the message-tag. As you can see from the example, 
         the tester may use the MarkupBuilder with "xml.ROOT-ELEMENT{ CHILD-ELEMENTS }". The XML messages can be created fast and easy, 
         with some simple rules:</para>
         
-        <itemizedlist>
-            <listitem>The script starts always with "xml", followed by a dot and the name of the root-element of the XML message.</listitem>
-            <listitem>Child-elements may be defined within curly brackets after the root-element(the same applies for child-elements).</listitem>
-            <listitem>Attributes and the content of elements can be defined within round brackets, after the element-name.</listitem>
-            <listitem>Attribute-values and the content have to stand within apostrophes('value').</listitem>
+        <itemizedlist mark="opencircle">
+            <listitem><para>The script starts always with "xml", followed by a dot and the name of the root-element of the XML message.</para></listitem>
+            <listitem><para>Child-elements may be defined within curly brackets after the root-element(the same applies for child-elements).</para></listitem>
+            <listitem><para>Attributes and the content of elements can be defined within round brackets, after the element-name.</para></listitem>
+            <listitem><para>Attribute-values and the content have to stand within apostrophes('value').</para></listitem>
         </itemizedlist>
         
         <para>The Groovy MarkupBuilder script may also be used with receive actions:</para>
@@ -605,7 +605,7 @@
           &lt;script-resource file=&quot;file:xmlData/MarkupBuilderSendScript.groovy&quot;/&gt;
       &lt;/message&gt;
   &lt;/send&gt;
-  &lt;receive with="helloResponseReceiver" timeout="5000"&gt;
+  &lt;receive with=&quot;helloResponseReceiver&quot; timeout=&quot;5000&quot;&gt;
       &lt;message&gt;
           &lt;script&gt;
               xml.HelloResponse(xmlns: 'http://www.consol.de/schemas/samples/sayHello.xsd'){
@@ -622,7 +622,60 @@
         <para>It is also possible to define the script as external file resource, as you can see from the send action. Namespaces may be 
         defined after the root-element within the round brackets.</para>
         
-        <tip>For further information on the use of Groovy's MarkupBuilder see <ulink url="http://groovy.codehaus.org/Creating+XML+using+Groovy%27s+MarkupBuilder">Groovy Website - using MarkupBuilder</ulink></tip> 
+        <tip>For further information on the use of Groovy's MarkupBuilder see 
+        <ulink url="http://groovy.codehaus.org/Creating+XML+using+Groovy%27s+MarkupBuilder">Groovy Website - using MarkupBuilder</ulink></tip> 
+    </section>
+    
+    <section id="groovy-xmlslurper">
+        <title>Groovy XmlSlurper (message validation)</title>
+        
+        <para>With the Groovy XmlSlurper the tester is able to simply validate received XML messages. Therefor he may compare elements of the 
+        message(attributes, values, etc.), with expected values and validate this comparisons with "assert":</para>
+        
+        <programlisting>
+  &lt;receive with=&quot;helloResponseReceiver&quot; timeout=&quot;5000&quot;&gt;
+      &lt;message>
+          &lt;validation-script type=&quot;groovy&quot;&gt;
+              assert root.children().size() == 4
+              assert root.MessageId.text() == '${messageId}'
+              assert root.CorrelationId.text() == '${correlationId}'
+              assert root.User.text() == 'HelloService'
+              assert root.Text.text() == 'Hello ' + context.getVariable("user")
+          &lt;/validation-script&gt;
+      &lt;/message&gt;
+      &lt;header&gt;
+          &lt;element name=&quot;Operation&quot; value=&quot;sayHello&quot;/&gt;
+          &lt;element name=&quot;CorrelationId&quot; value=&quot;${correlationId}&quot;/&gt;
+      &lt;/header&gt;
+  &lt;/receive&gt;
+        </programlisting>
+        
+        <para>To define Groovy XmlSlurper validation scripts, we use the validation-script-tag inside the message-tag. The validation-script 
+        "type" must be set to "groovy". Now the script may be defined with "assert"-statements, comparing values of the received message 
+        with expected values. We can get elements of the message with the XmlSlurper, named "root", which represents the root-element of the
+        message. Child-elements and attributes may be choosed with a dot, followed by their name or if we need all child-elements, we can 
+        use the "children()"-function. The "text()"-function returns the text-value and the "size()"-function, the number of elements in a list</para>
+        
+        <para>As you can see from the example, we may use variables and the TestContext within the validation script. The script can also be 
+        defined as external file resource:</para>
+        
+        <programlisting>
+  &lt;receive with=&quot;helloResponseReceiver&quot; timeout=&quot;5000&quot;&gt;
+      &lt;message>
+          &lt;validation-script type=&quot;groovy&quot; file=&quot;file:xmlData/validationScript.groovy&quot;/&gt;
+      &lt;/message&gt;
+      &lt;header&gt;
+          &lt;element name=&quot;Operation&quot; value=&quot;sayHello&quot;/&gt;
+          &lt;element name=&quot;CorrelationId&quot; value=&quot;${correlationId}&quot;/&gt;
+      &lt;/header&gt;
+  &lt;/receive&gt;
+        </programlisting>
+        
+        <note>If validation script is used to validate messages, other validations with data-/resource-/script-/script-resource- or 
+        validate-tag are not allowed in the message-tag.</note>
+        
+        <tip>For further information on the use of Groovy's XmlSlurper see 
+        <ulink url="http://groovy.codehaus.org/Reading+XML+using+Groovy%27s+XmlSlurper">Groovy Website - using XmlSlurper</ulink></tip>
     </section>
   </section>
   

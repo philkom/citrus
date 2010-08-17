@@ -160,6 +160,25 @@ public class ReceiveMessageActionParser implements BeanDefinitionParser {
                 builder.addPropertyValue("validateMessageElements", validateValues);
             }
             
+            Element validationScriptElement = DomUtils.getChildElementByTagName(messageElement, "validation-script");
+            if (validationScriptElement != null) {
+            	builder.addPropertyValue("validationScript", DomUtils.getTextValue(validationScriptElement));
+            	String type = validationScriptElement.getAttribute("type");
+            	if (StringUtils.hasText(type)) {
+            		builder.addPropertyValue("validationScriptType", type);
+            	}
+            	String filePath = validationScriptElement.getAttribute("file");
+            	if (StringUtils.hasText(filePath)) {
+                    if (filePath.startsWith("classpath:")) {
+                        builder.addPropertyValue("validationScriptResource", new ClassPathResource(filePath.substring("classpath:".length())));
+                    } else if (filePath.startsWith("file:")) {
+                        builder.addPropertyValue("validationScriptResource", new FileSystemResource(filePath.substring("file:".length())));
+                    } else {
+                        builder.addPropertyValue("validationScriptResource", new FileSystemResource(filePath));
+                    }
+            	}
+            }
+            
             Map<String, String> namespaces = new HashMap<String, String>();
             List<?> namespaceElements = DomUtils.getChildElementsByTagName(messageElement, "namespace");
             if (namespaceElements.size() > 0) {

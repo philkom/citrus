@@ -40,6 +40,7 @@ import com.consol.citrus.message.MessageSelectorBuilder;
 import com.consol.citrus.util.FileUtils;
 import com.consol.citrus.util.GroovyUtils;
 import com.consol.citrus.util.XMLUtils;
+import com.consol.citrus.validation.DefaultXMLMessageValidator;
 import com.consol.citrus.validation.MessageValidator;
 import com.consol.citrus.validation.XmlValidationContext;
 
@@ -93,6 +94,20 @@ public class ReceiveMessageAction extends AbstractTestAction {
     /** Validation context holding information like expected message payload, 
      * ignored elements and so on */
     private XmlValidationContext validationContext = new XmlValidationContext();
+    
+    /** Validation (Groovy) script for message validation,
+     * used instead of XML message or Groovy MarkupBuilder script */
+    private String validationScript;
+    
+    /** Validation (Groovy) script for message validation
+     * used instead of XML message or Groovy MarkupBuilder script
+     * defined in external file*/
+    private Resource validationScriptResource;
+    
+    /** Indicates the type of the validation script,
+     * which supports only Groovy at the moment
+     */
+    private String validationScriptType = "groovy";
     
     /** XML namespace declaration used for XPath expression evaluation */
     private Map<String, String> namespaces = new HashMap<String, String>();
@@ -176,38 +191,65 @@ public class ReceiveMessageAction extends AbstractTestAction {
             //save variables from message payload
             context.createVariablesFromMessageValues(extractMessageElements, receivedMessage, validationContext.getNamespaceContext());
             
-            //check if empty message was expected
-	        if (receivedMessage.getPayload() == null || receivedMessage.getPayload().toString().length() == 0) {
-	            if (messageResource == null && (messageData == null || messageData.length() == 0) &&
-	                scriptResource == null && (scriptData == null || scriptData.length() == 0)) {
-	                log.info("Received message body is empty as expected - therefore no message validation");
-	                return;
-	            } else {
-	                throw new CitrusRuntimeException("Validation error: Received message body is empty");
-	            }
-	        }
-	
-	        //construct control message payload
-	        String expectedMessagePayload = "";
-	        if (messageResource != null) {
-	            expectedMessagePayload = context.replaceDynamicContentInString(FileUtils.readToString(messageResource));
-	        } else if (messageData != null){
-	            expectedMessagePayload = context.replaceDynamicContentInString(messageData);
-	        } else if (scriptResource != null){
-	            expectedMessagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(FileUtils.readToString(scriptResource)));
-	        } else if (scriptData != null){
-	            expectedMessagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(scriptData));
-	        }
-	
-	        if (StringUtils.hasText(expectedMessagePayload)) {
-	            expectedMessagePayload = context.replaceMessageValues(messageElements, expectedMessagePayload);
-	            Message<String> expectedMessage = MessageBuilder.withPayload(expectedMessagePayload).build();
-	            
-	            validationContext.setExpectedMessage(expectedMessage);
-	        }
-
-	        //validate message
-	        validateMessage(receivedMessage, context);
+            //validation with XML message data or Groovy MarkupBuilder script
+            if (validationScript == null) {
+	            //check if empty message was expected
+		        if (receivedMessage.getPayload() == null || receivedMessage.getPayload().toString().length() == 0) {
+		            if (messageResource == null && (messageData == null || messageData.length() == 0) &&
+		                scriptResource == null && (scriptData == null || scriptData.length() == 0)) {
+		                log.info("Received message body is empty as expected - therefore no message validation");
+		                return;
+		            } else {
+		                throw new CitrusRuntimeException("Validation error: Received message body is empty");
+		            }
+		        }
+		        
+		        //construct control message payload
+		        String expectedMessagePayload = "";
+		        if (messageResource != null) {
+		            expectedMessagePayload = context.replaceDynamicContentInString(FileUtils.readToString(messageResource));
+		        } else if (messageData != null){
+		            expectedMessagePayload = context.replaceDynamicContentInString(messageData);
+		        } else if (scriptResource != null){
+		            expectedMessagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(FileUtils.readToString(scriptResource)));
+		        } else if (scriptData != null){
+		            expectedMessagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(scriptData));
+		        }
+		        
+		        if (StringUtils.hasText(expectedMessagePayload)) {
+		            expectedMessagePayload = context.replaceMessageValues(messageElements, expectedMessagePayload);
+		            Message<String> expectedMessage = MessageBuilder.withPayload(expectedMessagePayload).build();
+		            
+		            validationContext.setExpectedMessage(expectedMessage);
+		        }
+		        
+		        //validate message
+		        validateMessage(receivedMessage, context);
+            } else { //validation with validation-script
+            	log.info("Starting message validation with validation-script");
+            	//validate schema,namespaces and message header
+            	DefaultXMLMessageValidator xmlValidator = (DefaultXMLMessageValidator) validator;
+            	if(validationContext.isSchemaValidation()) {
+            		xmlValidator.validateXMLSchema(receivedMessage);
+            		xmlValidator.validateDTD(validationContext.getDTDResource(), receivedMessage);
+                }
+            	xmlValidator.validateNamespaces(validationContext.getExpectedNamespaces(), receivedMessage);
+            	xmlValidator.validateMessageHeader(validationContext.getExpectedMessageHeaders(), receivedMessage.getHeaders(), context);
+                //validate groovy script
+            	if (validationScriptType.equals("groovy")) {
+					String script = "";
+            		if (validationScriptResource != null) {
+            			script = context.replaceDynamicContentInString(FileUtils.readToString(validationScriptResource));
+            		} else if (validationScript != null) {
+            			script = context.replaceDynamicContentInString(validationScript);
+            		}
+                    GroovyUtils.validateScript(script, receivedMessage.getPayload().toString(), context);
+					log.info("Validation with Groovy validation-script finished successfully");					
+				}
+            	else {
+					throw new CitrusRuntimeException("Validation-script type " + validationScriptType + " is unknown, only groovy is supported");
+				}
+            }
         } catch (ParseException e) {
             throw new CitrusRuntimeException(e);
         } catch (IOException e) {
@@ -334,6 +376,30 @@ public class ReceiveMessageAction extends AbstractTestAction {
      */
     public void setValidator(MessageValidator validator) {
         this.validator = validator;
+    }
+    
+    /**
+     * Set the validation-script.
+     * @param validationScript the validationScript to set
+     */
+    public void setValidationScript(String validationScript){
+    	this.validationScript = validationScript;
+    }
+
+	/**
+	 * Set the validation-script as resource
+	 * @param validationScriptResource the validationScriptResource to set
+	 */
+	public void setValidationScriptResource(Resource validationScriptResource) {
+		this.validationScriptResource = validationScriptResource;
+	}
+	
+    /**
+     * Set the type of the validation script.
+     * @param validationScriptType the validationScriptType to set
+     */
+    public void setValidationScriptType(String validationScriptType){
+    	this.validationScriptType = validationScriptType;
     }
     
     /**

@@ -1024,4 +1024,49 @@ public class ReceiveMessageActionTest extends AbstractBaseTest {
         
         Assert.fail("Missing " + CitrusRuntimeException.class + " for receiving unexpected empty message payload");
     }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+	public void testReceiveMessageWithValidationScript() {
+		ReceiveMessageAction receiveAction = new ReceiveMessageAction();
+		receiveAction.setMessageReceiver(messageReceiver);
+		receiveAction.setValidator(validator);
+		receiveAction.setValidationScript("assert root.Message.name() == 'Message'\n" + "assert root.Message.text() == 'Hello World!'");
+		receiveAction.setValidationScriptResource(new ClassPathResource("validation-script.groovy", SendMessageActionTest.class));
+		
+		Map<String, Object> headers = new HashMap<String, Object>();
+        Message controlMessage = MessageBuilder.withPayload("<TestRequest><Message>Hello World!</Message></TestRequest>")
+                                    .copyHeaders(headers)
+                                    .build();
+        
+		reset(messageReceiver);
+		expect(messageReceiver.receive()).andReturn(controlMessage).once();
+		replay(messageReceiver);
+		
+		receiveAction.execute(context);
+		
+		verify(messageReceiver);
+	}
+    
+    @Test
+    @SuppressWarnings("unchecked")
+	public void testReceiveMessageWithValidationScriptResource() {
+		ReceiveMessageAction receiveAction = new ReceiveMessageAction();
+		receiveAction.setMessageReceiver(messageReceiver);
+		receiveAction.setValidator(validator);
+		receiveAction.setValidationScriptResource(new ClassPathResource("validation-script.groovy", SendMessageActionTest.class));
+		
+		Map<String, Object> headers = new HashMap<String, Object>();
+        Message controlMessage = MessageBuilder.withPayload("<TestRequest><Message>Hello World!</Message></TestRequest>")
+                                    .copyHeaders(headers)
+                                    .build();
+        
+		reset(messageReceiver);
+		expect(messageReceiver.receive()).andReturn(controlMessage).once();
+		replay(messageReceiver);
+		
+		receiveAction.execute(context);
+		
+		verify(messageReceiver);
+	}
 }

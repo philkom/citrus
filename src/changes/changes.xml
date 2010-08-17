@@ -15,8 +15,11 @@
   </properties>
   
   <body>
-    <release version="1.2-SNAPSHOT" date="16.08.2010" description="1.2 snapshot release">
+    <release version="1.2-SNAPSHOT" date="17.08.2010" description="1.2 snapshot release">
         <action dev="philkom" type="add">
+          #305 Groovy XML message validation
+        </action>
+		<action dev="philkom" type="add">
           #306 Groovy MarkupBuilder
         </action>
 		<action dev="philkom" type="add">

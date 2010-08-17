@@ -21,6 +21,7 @@ package com.consol.citrus.util;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 
+import com.consol.citrus.context.TestContext;
 import com.consol.citrus.exceptions.CitrusRuntimeException;
 
 import groovy.lang.GroovyClassLoader;
@@ -43,6 +44,26 @@ public class GroovyUtils {
 		"def xml = new MarkupBuilder(writer)\n";
 	
 	/**
+	 * Definition for the Groovy Slurper
+	 */
+	private static final String SLURPER_DEFINITION=
+		"import com.consol.citrus.*\n" +
+    	"import com.consol.citrus.variable.*\n" +
+        "import com.consol.citrus.context.TestContext\n" +
+        "import com.consol.citrus.util.GroovyUtils.ValidationScriptExecutor\n" +
+        "import groovy.util.XmlSlurper\n" +
+        "public class ValidationScript implements ValidationScriptExecutor{\n" +
+        "public void validate(String receivedMessage, TestContext context){\n" +
+		"def root = new XmlSlurper().parseText(receivedMessage)\n";
+	
+	/**
+	 * Executes a validation-script
+	 */
+	public interface ValidationScriptExecutor {
+		public void validate(String receivedMessage, TestContext context);
+	}
+	
+	/**
      * Converts a Groovy MarkupBuilder script to a XML document and returns it as String.
      * 
      * @param scriptData
@@ -59,6 +80,33 @@ public class GroovyUtils {
 			GroovyObject groovyObject = (GroovyObject) groovyClass.newInstance();
 			Object[] args = {};
 			return (String) groovyObject.invokeMethod("run", args);
+		} catch (CompilationFailedException e) {
+			throw new CitrusRuntimeException(e);
+		} catch (InstantiationException e) {
+			throw new CitrusRuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new CitrusRuntimeException(e);
+		}
+	}
+
+	/**
+     * Runs the validation-script, which provides the use of Groovy Slurper and the Testcontext.
+     * 
+     * @param validationScript
+     * @param receivedMessage
+     * @param context
+     * @return
+     */
+	public static void validateScript(String validationScript, String receivedMessage, TestContext context) {
+		try {
+			ClassLoader parent = GroovyUtils.class.getClassLoader(); 
+			GroovyClassLoader loader = new GroovyClassLoader(parent);
+			Class<?> groovyClass = loader.parseClass(SLURPER_DEFINITION + validationScript + "\n}}");
+			if(groovyClass == null) {
+                throw new CitrusRuntimeException("Could not load groovy script!");    
+            }
+			GroovyObject groovyObject = (GroovyObject) groovyClass.newInstance();
+			((ValidationScriptExecutor)groovyObject).validate(receivedMessage, context);
 		} catch (CompilationFailedException e) {
 			throw new CitrusRuntimeException(e);
 		} catch (InstantiationException e) {
