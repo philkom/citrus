@@ -115,6 +115,76 @@ public class SendMessageActionTest extends AbstractBaseTest {
     
     @Test
     @SuppressWarnings("unchecked")
+	public void testSendMessageWithMessagePayloadScriptData() {
+		SendMessageAction sendAction = new SendMessageAction();
+		sendAction.setMessageSender(messageSender);
+		StringBuilder sb = new StringBuilder();
+		sb.append("xml.TestRequest(){\n");
+		sb.append("Message('Hello World!')\n");
+		sb.append("}");
+		sendAction.setScriptData(sb.toString());
+		
+		Map<String, Object> headers = new HashMap<String, Object>();
+		final Message controlMessage = MessageBuilder.withPayload("<TestRequest><Message>Hello World!</Message></TestRequest>")
+		                        .copyHeaders(headers)
+		                        .build();
+		
+		reset(messageSender);
+		
+		messageSender.send((Message)anyObject());
+		expectLastCall().andAnswer(new IAnswer<Object>() {
+            public Object answer() throws Throwable {
+                DefaultXMLMessageValidator validator = new DefaultXMLMessageValidator();
+                XmlValidationContext validationContext = new XmlValidationContext();
+                validationContext.setExpectedMessage(controlMessage);
+                
+                validator.validateMessage(((Message)EasyMock.getCurrentArguments()[0]), context, validationContext);
+                return null;
+            }
+        }).once();
+		
+		replay(messageSender);
+		
+		sendAction.execute(context);
+		
+		verify(messageSender);
+	}
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testSendMessageWithMessagePayloadScriptResource() {
+        SendMessageAction sendAction = new SendMessageAction();
+        sendAction.setMessageSender(messageSender);
+        sendAction.setScriptResource(new ClassPathResource("test-request-payload.groovy", SendMessageActionTest.class));
+        
+        Map<String, Object> headers = new HashMap<String, Object>();
+        final Message controlMessage = MessageBuilder.withPayload("<TestRequest><Message>Hello World!</Message></TestRequest>")
+                                .copyHeaders(headers)
+                                .build();
+        
+        reset(messageSender);
+        
+        messageSender.send((Message)anyObject());
+        expectLastCall().andAnswer(new IAnswer<Object>() {
+            public Object answer() throws Throwable {
+                DefaultXMLMessageValidator validator = new DefaultXMLMessageValidator();
+                XmlValidationContext validationContext = new XmlValidationContext();
+                validationContext.setExpectedMessage(controlMessage);
+                
+                validator.validateMessage(((Message)EasyMock.getCurrentArguments()[0]), context, validationContext);
+                return null;
+            }
+        }).once();
+        
+        replay(messageSender);
+        
+        sendAction.execute(context);
+        
+        verify(messageSender);
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
     public void testSendMessageWithMessagePayloadDataVariablesSupport() {
         SendMessageAction sendAction = new SendMessageAction();
         sendAction.setMessageSender(messageSender);
@@ -551,7 +621,7 @@ public class SendMessageActionTest extends AbstractBaseTest {
         try {
             sendAction.execute(context);
         } catch(CitrusRuntimeException e) {
-            Assert.assertEquals(e.getMessage(), "Could not find message data. Either message-data or message-resource must be specified");
+            Assert.assertEquals(e.getMessage(), "Could not find message data. Either message-data,message-resource or Groovy MarkupBuilder script must be specified");
             return;
         }
         

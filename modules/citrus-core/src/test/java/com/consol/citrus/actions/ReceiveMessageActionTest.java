@@ -91,6 +91,54 @@ public class ReceiveMessageActionTest extends AbstractBaseTest {
     
     @Test
     @SuppressWarnings("unchecked")
+	public void testReceiveMessageWithMessagePayloadScriptData() {
+		ReceiveMessageAction receiveAction = new ReceiveMessageAction();
+		receiveAction.setMessageReceiver(messageReceiver);
+		receiveAction.setValidator(validator);
+		StringBuilder sb = new StringBuilder();
+		sb.append("xml.TestRequest(){\n");
+		sb.append("Message('Hello World!')\n");
+		sb.append("}");
+		receiveAction.setScriptData(sb.toString());
+		
+		Map<String, Object> headers = new HashMap<String, Object>();
+        Message controlMessage = MessageBuilder.withPayload("<TestRequest><Message>Hello World!</Message></TestRequest>")
+                                    .copyHeaders(headers)
+                                    .build();
+        
+		reset(messageReceiver);
+		expect(messageReceiver.receive()).andReturn(controlMessage).once();
+		replay(messageReceiver);
+		
+		receiveAction.execute(context);
+		
+		verify(messageReceiver);
+	}
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testReceiveMessageWithMessagePayloadScriptResource() {
+        ReceiveMessageAction receiveAction = new ReceiveMessageAction();
+        receiveAction.setMessageReceiver(messageReceiver);
+        receiveAction.setValidator(validator);
+        receiveAction.setScriptResource(new ClassPathResource("test-request-payload.groovy", SendMessageActionTest.class));
+        
+        Map<String, Object> headers = new HashMap<String, Object>();
+        final Message controlMessage = MessageBuilder.withPayload("<TestRequest><Message>Hello World!</Message></TestRequest>")
+                                    .copyHeaders(headers)
+                                    .build();
+        
+        reset(messageReceiver);
+        expect(messageReceiver.receive()).andReturn(controlMessage).once();
+        replay(messageReceiver);
+        
+        receiveAction.execute(context);
+        
+        verify(messageReceiver);
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
     public void testReceiveMessageWithMessagePayloadDataVariablesSupport() {
         ReceiveMessageAction receiveAction = new ReceiveMessageAction();
         receiveAction.setMessageReceiver(messageReceiver);

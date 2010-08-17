@@ -17,6 +17,9 @@
   <body>
     <release version="1.2-SNAPSHOT" date="16.08.2010" description="1.2 snapshot release">
         <action dev="philkom" type="add">
+          #306 Groovy MarkupBuilder
+        </action>
+		<action dev="philkom" type="add">
           #304 TestContext in Groovy action
         </action>
 		<action dev="philkom" type="add">
