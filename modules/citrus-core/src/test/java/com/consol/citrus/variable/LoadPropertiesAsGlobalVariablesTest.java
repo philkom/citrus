@@ -97,4 +97,17 @@ public class LoadPropertiesAsGlobalVariablesTest extends AbstractBaseTest {
         
         propertyLoader.loadPropertiesAsVariables();
     }
+    
+    @Test
+    public void testGlobalVariablesInPropertyFile() {
+        GlobalVariablesPropertyLoader propertyLoader = new GlobalVariablesPropertyLoader();
+        propertyLoader.setPropertyFiles(Collections.singletonList("classpath:com/consol/citrus/variable/globalvariablestest.properties"));
+        
+        GlobalVariables globalVariables = new GlobalVariables();
+        propertyLoader.setGlobalVariables(globalVariables);
+        
+        propertyLoader.loadPropertiesAsVariables();
+
+        Assert.assertTrue(globalVariables.getVariables().get("text").equals("Hello Mickey Mouse!"));
+    }
 }
