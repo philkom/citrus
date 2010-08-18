@@ -55,12 +55,25 @@ public class SQLActionParser implements BeanDefinitionParser {
             beanDefinition = BeanDefinitionBuilder.rootBeanDefinition(ExecuteSQLQueryAction.class);
             beanDefinition.addPropertyValue("name", "sqlQuery:" + dataSource);
             
+            Map<String, List<String>> validateRowValues = new HashMap<String, List<String>>();
             Map<String, String> validateValues = new HashMap<String, String>();
             for (Iterator<?> iter = validateElements.iterator(); iter.hasNext();) {
                 Element validate = (Element) iter.next();
-                validateValues.put(validate.getAttribute("column"), validate.getAttribute("value"));
+                Element values = DomUtils.getChildElementByTagName(validate, "values");
+                if (values != null) {
+                	List<String> valueList = new ArrayList<String>();
+                	List<?> valueElements = DomUtils.getChildElementsByTagName(values, "value");
+                	for (Iterator<?> valueElementsIt = valueElements.iterator(); valueElementsIt.hasNext();) {
+						Element value = (Element) valueElementsIt.next();
+						valueList.add(DomUtils.getTextValue(value));
+					}
+                	validateRowValues.put(validate.getAttribute("column"), valueList);
+                } else {
+                    validateValues.put(validate.getAttribute("column"), validate.getAttribute("value"));
+                }
             }
             
+            beanDefinition.addPropertyValue("validationRowElements", validateRowValues);
             beanDefinition.addPropertyValue("validationElements", validateValues);
             
             Map<String, String> extractToVariables = new HashMap<String, String>();

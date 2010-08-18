@@ -102,9 +102,44 @@
       <para>If a single validation happens to fail, the whole action will fail with respective validation errors.</para>
       
       <note>
-        <para>When validating database query result sets Citrus can only handle single rows. In case a result set holds 
-        several rows only the first row is evaluated.</para>
+        <para>When validating database query result sets with &quot;&lt;validate column=&quot;...&quot; value=&quot;...&quot;/&gt;&quot; 
+        and the result set holds several rows, only the first row will be evaluated.</para>
       </note>
+      
+      <para>Since version 1.2-SNAPSHOT the tester may also validate whole result sets, with multiple rows. Therefor we can use several 
+      &lt;validate&gt; elements, for different columns, like in this example:</para>
+      
+      <programlisting>
+  &lt;sql datasource=&quot;testDataSource&quot;&gt;
+      &lt;statement&gt;select REQUEST_TAG as RTAG, DESCRIPTION as DESC from ORDERS&lt;/statement&gt;
+      &lt;validate column=&quot;RTAG&quot;&gt;
+          &lt;values&gt;
+       	      &lt;value&gt;requestTag&lt;/value&gt;
+       	      &lt;value&gt;@ignore@&lt;/value&gt;            		
+          &lt;/values&gt;            	
+      &lt;/validate&gt;
+      &lt;validate column=&quot;DESC&quot; value=&quot;Migrate&quot;/&gt;
+      &lt;validate column=&quot;DESC&quot;&gt;
+          &lt;values&gt;
+              &lt;value&gt;Migrate&lt;/value&gt;
+              &lt;value&gt;&lt;/value&gt;            		
+          &lt;/values&gt;            	
+      &lt;/validate&gt;
+  &lt;/sql&gt;
+      </programlisting>
+      
+      <para>For the validation of multiple rows the &lt;validate&gt; element contains a list of row &quot;values&quot;, which are expected, 
+      to be in the specified &quot;column&quot; of the result set, in the order you specified. As you can see from the example above, value 
+      validation of the first row is combinable with multiple row validation.</para>
+      
+      <para>Like you already know, you may use variables in the values. Additional to that, it is possible to use the @ignore@ placeholder 
+      in a value, to skip the validation of this value in the result set.</para>
+      
+      <important>
+        <para>It is important, that the expected values are defined in the correct order, because they are compared one on one with them, from 
+        the result set. If any of the values fail the validation, the whole action will fail with respective validation errors. The validation 
+        will also fail, if there are more or less values in the result set, than expected.</para>
+      </important>
     </section>
     
     <section id="actions-database-read-values">

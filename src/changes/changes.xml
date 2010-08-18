@@ -17,6 +17,9 @@
   <body>
     <release version="1.2-SNAPSHOT" date="18.08.2010" description="1.2 snapshot release">
         <action dev="philkom" type="add">
+          #241 Validate multiple db rows
+        </action>
+		<action dev="philkom" type="add">
           #242 XSLT test action
         </action>
 		<action dev="philkom" type="add">

@@ -54,6 +54,9 @@ import com.consol.citrus.variable.VariableUtils;
 public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction {
     /** Map holding all column values to be validated, keys represent the column names */
     protected Map<String, String> validationElements = new HashMap<String, String>();
+    
+    /** Map holding lists with row values to be validated, keys represent the column names */
+    protected Map<String, List<String>> validationRowElements = new HashMap<String, List<String>>();
 
     /** SQL file resource holding several query statements */
     private Resource sqlResource;
@@ -104,6 +107,7 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
             }
 
             Map<String, Object> resultMap = new HashMap<String, Object>();
+            Map<String, List<String>> resultColumnMap = new HashMap<String, List<String>>();
             int countRetries = 0;
             boolean successful = false;
             while (!successful) {
@@ -119,16 +123,42 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
                             log.error("Error while parsing sql statement: " + stmt);
                             throw new CitrusRuntimeException(e);
                         }
-                        List list = getJdbcTemplate().queryForList(stmt);
+                        List<Map<String, Object>> list = getJdbcTemplate().queryForList(stmt);
 
                         checkOnResultSize(stmt, list);
-
-                        resultMap.putAll((Map) list.get(0));
+                        
+                        //put all columns and values of the first row of the result in the resultMap
+                        //for the first row validation
+                        resultMap.putAll(list.get(0));
+                        
+                        //form a Map object which contains all columns of the result as keys
+                        //and a List of row values as values of the Map, for the multiple row validation
+                        for (Map<String, Object> row : list) {
+                        	for (Entry<String, Object> rowEntry : row.entrySet()) {
+								String columnName = rowEntry.getKey();
+								if (resultColumnMap.containsKey(columnName)) {
+									resultColumnMap.get(columnName).add((rowEntry.getValue() == null ? null : rowEntry.getValue().toString()));
+								}
+								else {
+									List<String> rowValues = new ArrayList<String>();
+									rowValues.add((rowEntry.getValue() == null ? null : rowEntry.getValue().toString()));
+									resultColumnMap.put(columnName, rowValues);
+								}
+							}
+                        }
                     }
-
-                    if (!validate(validationElements, resultMap, context)) {
-                        throw new CitrusRuntimeException("Database validation failed");
-                    }
+                    
+                    if (!validationElements.isEmpty()) {
+                    	if (!validate(validationElements, resultMap, context)) {
+                            throw new CitrusRuntimeException("Database validation failed");
+                        }
+					}
+                    
+                    if (!validationRowElements.isEmpty()) {
+                    	if (!validateMultipleRows(validationRowElements, resultColumnMap, context)) {
+    						throw new CitrusRuntimeException("Database validation failed");
+    					}
+					}
 
                     successful = true;
                 }
@@ -187,22 +217,21 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
         }
     }
 
-
-    /**
+	/**
      * Checks on the size of the result set:
      * if no rows were returned a CitrusRuntimeException is thrown, if more than one row
-     * is returned some logging entries are made, because we can only validate/save a single row.
+     * is returned and only first row validation is used some logging entries are made.
      * 
      * @param stmt The SQL statement (just needed for logging).
      * @param resultList The list which is checked.
      */
 	@SuppressWarnings("unchecked")
-    private void checkOnResultSize(String stmt, List resultList) {
+    private void checkOnResultSize(String stmt, List<Map<String, Object>> resultList) {
         if (resultList.size() == 0) {
             throw new CitrusRuntimeException("Validation not possible. SQL result set is empty for statement: " + stmt);
         }
 
-        if (resultList.size()>1) {
+        if (resultList.size()>1 && !validationElements.isEmpty() && validationRowElements.isEmpty()) {
             log.warn("Result set has more than one rows (" + resultList.size() + ") for statement: " + stmt);
             log.warn("Only first data row will be validated. Other rows in data set will be ignored!");
 
@@ -250,7 +279,7 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
      */
     protected boolean validate(final Map<String, String> expectedValues, final Map<String, Object> resultValues, TestContext context) throws UnknownElementException, ValidationException
     {
-        log.info("Start database query validation ...");
+        log.info("Start database query validation of the first row ...");
 
         for (Entry<String, String> entry : expectedValues.entrySet()) {
             String columnName = entry.getKey();
@@ -294,10 +323,84 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
             }
         }
 
-        log.info("Validation finished successfully: All values OK");
+        log.info("First row validation finished successfully: All values OK");
 
         return true;
     }
+    
+
+    protected boolean validateMultipleRows(Map<String, List<String>> expectedRows, Map<String, List<String>> resultRows, TestContext context) throws UnknownElementException, ValidationException
+    {
+    	log.info("Start database query validation for multiple rows ...");
+    	
+    	for (Entry<String, List<String>> columnEntry : expectedRows.entrySet()){
+    		String columnName = columnEntry.getKey();
+    		
+    		if (!resultRows.containsKey(columnName)) {
+    			throw new CitrusRuntimeException("Could not find column " + columnName + " in SQL result set");
+    		}
+    		
+    		List<String> resultRowValues = resultRows.get(columnName);
+    		int resultRowsCount = resultRowValues.size();
+    		List<String> expectedRowValues = columnEntry.getValue();
+    		int expectedRowsCount = expectedRowValues.size();
+    		    		
+    		
+    		if (resultRowsCount > expectedRowsCount) {
+    			throw new CitrusRuntimeException("More values(rows) in the SQL result set for column " + columnName
+    					+ " than expected, column has " + resultRowsCount + " rows, expected " + expectedRowsCount + " rows");
+    		} else if (resultRowsCount < expectedRowsCount) {
+    			throw new CitrusRuntimeException("Less values(rows) in the SQL result set for column " + columnName
+    					+ " than expected, column has " + resultRowsCount + " rows, expected " + expectedRowsCount + " rows");
+			}
+    		
+    		for (int i = 0; i < expectedRowsCount; i++) {
+    			String expectedRowValue = expectedRowValues.get(i);
+    			String resultRowValue = resultRowValues.get(i);
+    			
+    			if (VariableUtils.isVariableName(expectedRowValue)) {
+                    expectedRowValue = context.getVariable(expectedRowValue);
+                } else if(context.getFunctionRegistry().isFunction(expectedRowValue)) {
+                    expectedRowValue = FunctionUtils.resolveFunction(expectedRowValue, context);
+                }
+    			
+    			//if IGNORE_PLACEHOLDER is found in expectedRowValue skip validation
+    			if (expectedRowValue.equals(CitrusConstants.IGNORE_PLACEHOLDER)) {
+    				if(log.isDebugEnabled()) {
+                        log.debug(CitrusConstants.IGNORE_PLACEHOLDER + " placeholder found in expected value for column: " + columnName
+                        		+ " at row: " + (i+1) + " skipped value validation result value was: " + resultRowValue);
+                    }
+				} else {
+					//when validating databaseQuery null values are allowed
+	                if (resultRowValue == null) {
+	                    if (expectedRowValue == null || expectedRowValue.toUpperCase().equals("NULL") || expectedRowValue.length() == 0) {
+	                        if(log.isDebugEnabled()) {
+	                            log.debug("Validating database value for column: " + columnName + " at row: " + (i+1) + " value as expected: NULL - value OK");
+	                        }
+	                    } else {
+	                        throw new ValidationException("Validation failed for column: " +  columnName
+	                                + "  at row: " + (i+1) + "found value: NULL expected value: " + expectedRowValue);
+	                    }
+	                } else if (expectedRowValue != null && resultRowValue.equals(expectedRowValue)) {
+	                    if(log.isDebugEnabled()) {
+	                        log.debug("Validation successful for value in column: " + columnName + " at row: " + (i+1) + " expected value: " + expectedRowValue + " - value OK");
+	                    }
+	                } else {
+	                    throw new ValidationException("Validation failed for column: " +  columnName
+	                    		+ " at row: " + (i+1)
+	                            + " found value: '"
+	                            + resultRowValue
+	                            + "' expected value: "
+	                            + ((expectedRowValue == null || expectedRowValue.length()==0) ? "NULL" : expectedRowValue));
+	                }
+				}
+    		}
+    	}    	
+    	
+    	log.info("Multiple row validation finished successfully: All values OK");
+    	
+    	return true;
+	}
 
     /**
      * Setter for inline SQL statements.
@@ -319,10 +422,20 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
      * Set expected control result set. Keys represent the column names, values
      * the expected values.
      * 
-     * @param validateDBValues
+     * @param validationElements
      */
     public void setValidationElements(Map<String, String> validationElements) {
         this.validationElements = validationElements;
+    }
+    
+    /**
+     * Set expected control result set. Keys represent the column names, values
+     * the list of expected row values.
+     * 
+     * @param validationRowElements
+     */
+    public void setValidationRowElements(Map<String, List<String>> validationRowElements) {
+        this.validationRowElements = validationRowElements;
     }
 
     /**

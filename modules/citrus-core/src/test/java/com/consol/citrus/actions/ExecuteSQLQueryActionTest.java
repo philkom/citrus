@@ -309,6 +309,50 @@ public class ExecuteSQLQueryActionTest extends AbstractBaseTest {
     }
     
     @Test
+    public void testResultSetMultipleRowsValidation() {
+        String sql = "select ORDERTYPE, STATUS from orders where ID=5";
+        reset(jdbcTemplate);
+        
+        List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+        Map<String, String> resultRow1 = new HashMap<String, String>();
+        Map<String, String> resultRow2 = new HashMap<String, String>();
+        Map<String, String> resultRow3 = new HashMap<String, String>();
+
+        resultRow1.put("ORDERTYPE", "small");
+        resultRow1.put("STATUS", null);
+        resultList.add(resultRow1);
+        resultRow2.put("ORDERTYPE", "medium");
+        resultRow2.put("STATUS", "in_progress");
+        resultList.add(resultRow2);
+        resultRow3.put("ORDERTYPE", "big");
+        resultRow3.put("STATUS", "finished");
+        resultList.add(resultRow3);
+        
+        expect(jdbcTemplate.queryForList(sql)).andReturn(resultList);
+        
+        replay(jdbcTemplate);
+        
+        List<String> stmts = Collections.singletonList(sql);
+        executeSQLQueryAction.setStatements(stmts);
+        
+        Map<String, List<String>> validationElements = new HashMap<String, List<String>>();
+        List<String> ordertypeValues = new ArrayList<String>();
+        ordertypeValues.add("small");
+        ordertypeValues.add("medium");
+        ordertypeValues.add("big");
+        validationElements.put("ORDERTYPE", ordertypeValues);
+        List<String> statusValues = new ArrayList<String>();
+        statusValues.add("");
+        statusValues.add("in_progress");
+        statusValues.add("@ignore@");
+        validationElements.put("STATUS", statusValues);
+        
+        executeSQLQueryAction.setValidationRowElements(validationElements);
+        
+        executeSQLQueryAction.execute(context);
+    }
+    
+    @Test
     public void testMultipleStatementsValidationError() {
         String sql1 = "select ORDERTYPE, STATUS from orders where ID=5";
         String sql2 = "select NAME, HEIGHT from customers where ID=1";
