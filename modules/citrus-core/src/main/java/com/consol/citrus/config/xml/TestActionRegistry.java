@@ -64,6 +64,7 @@ public class TestActionRegistry {
         registerActionParser("assert", new AssertParser());
         registerActionParser("plsql", new ExecutePLSQLActionParser());
         registerActionParser("groovy", new GroovyActionParser());
+        registerActionParser("transform", new TransformActionParser());
     }
 
     /**
