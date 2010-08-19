@@ -55,7 +55,7 @@
             </imageobject>
         </mediaobject>
         <title>Citrus Framework - Reference Documentation</title>
-        <releaseinfo>1.1-SNAPSHOT</releaseinfo>
+        <releaseinfo>1.2-SNAPSHOT</releaseinfo>
         <authorgroup>
             <author>
                 <firstname>Christoph</firstname>
@@ -93,7 +93,7 @@
     &reporting;
     
     <appendix id="samples">
-        <title>Citrus samples</title>
+        <title>Citrus Samples</title>
         
         <para>This part will show you some sample applications that are tested using Citrus integration tests. 
         See below a list of all samples.</para>

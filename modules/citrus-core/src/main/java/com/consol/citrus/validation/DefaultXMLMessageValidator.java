@@ -1,20 +1,17 @@
 /*
- * Copyright 2006-2010 ConSol* Software GmbH.
+ * Copyright 2006-2010 the original author or authors.
  *
- * This file is part of Citrus.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Citrus is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Citrus is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Citrus. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.consol.citrus.validation;
@@ -46,6 +43,7 @@ import com.consol.citrus.context.TestContext;
 import com.consol.citrus.exceptions.*;
 import com.consol.citrus.functions.FunctionRegistry;
 import com.consol.citrus.functions.FunctionUtils;
+import com.consol.citrus.util.MessageUtils;
 import com.consol.citrus.util.XMLUtils;
 import com.consol.citrus.variable.VariableUtils;
 import com.consol.citrus.xml.XsdSchemaRepository;
@@ -92,9 +90,9 @@ public class DefaultXMLMessageValidator implements MessageValidator {
 
         XmlValidationContext xmlValidationContext = (XmlValidationContext)validationContext;
 
-        try {
-            log.info("Start message validation");
+        log.info("Start message validation");
 
+        try {
             if(xmlValidationContext.isSchemaValidation()) {
                 validateXMLSchema(receivedMessage);
                 validateDTD(xmlValidationContext.getDTDResource(), receivedMessage);
@@ -113,7 +111,11 @@ public class DefaultXMLMessageValidator implements MessageValidator {
         } catch (LSException e) {
             throw new CitrusRuntimeException(e);
         } catch (IllegalArgumentException e) {
+            log.error("Failed to validate:\n"+XMLUtils.prettyPrint(receivedMessage.getPayload().toString()));
             throw new ValidationException("Validation failed:", e);
+        } catch (ValidationException ex) {
+            log.error("Failed to validate:\n"+XMLUtils.prettyPrint(receivedMessage.getPayload().toString()));
+            throw ex;
         }
     }
 
@@ -135,7 +137,9 @@ public class DefaultXMLMessageValidator implements MessageValidator {
             String expectedValue = entry.getValue().toString();
             String actualValue = null;
 
-            if(headerName.startsWith(MessageHeaders.PREFIX)) {continue;}
+            if(MessageUtils.isSpringInternalHeader(headerName)) {
+                continue;
+            }
 
             if (VariableUtils.isVariableName(headerName)) {
                 headerName = context.getVariable(headerName);
@@ -143,10 +147,12 @@ public class DefaultXMLMessageValidator implements MessageValidator {
                 headerName = FunctionUtils.resolveFunction(headerName, context);
             }
 
-            if (receivedHeaderValues.containsKey(headerName) && receivedHeaderValues.get(headerName) != null) {
-                actualValue = receivedHeaderValues.get(headerName).toString();
-            } else {
+            if (!receivedHeaderValues.containsKey(headerName)) {
                 throw new ValidationException("Validation failed: Header element '" + headerName + "' is missing");
+            }
+            
+            if(receivedHeaderValues.get(headerName) != null) {
+                actualValue = receivedHeaderValues.get(headerName).toString();
             }
 
             if (VariableUtils.isVariableName(expectedValue)) {

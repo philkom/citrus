@@ -6,16 +6,16 @@
   <body>
     <section name="Welcome to Citrus">
       <p>
-        Citrus is an integration testing framework written in Java that tests your software application to fit into your customer's 
-        environment. The tool simulates surrounding systems across various transports (e.g. Http, JMS, TCP/IP, SOAP, ...) 
-        in order to perform automatic end-to-end use case testing.
+        Citrus is an integration test framework written in Java that tests your software on message interfaces to other 
+        applications. The framework simulates interface partners across various transports (e.g. Http, JMS, TCP/IP, SOAP, ...) 
+        in order to perform automated end-to-end integration tests.
       </p>
       
       <div id="download">
-        <a href="dist/citrus-1.1-SNAPSHOT-src.zip"><img src="images/download.png"/></a>
+        <a href="dist/citrus-1.1-with-dependencies.zip"><img src="images/download.png" alt="Download"/></a>
         <div>
-          <span id="download"><a href="dist/citrus-1.1-SNAPSHOT-src.zip">Download<br/>Citrus</a></span><br/>
-          <span id="download_text">Download the latest release 1.1-SNAPSHOT</span><br/>
+          <span id="download"><a href="dist/citrus-1.1-with-dependencies.zip">Download<br/>Citrus</a></span><br/>
+          <span id="download_text">Download the latest release 1.1</span><br/>
           <span id="download_more"><a href="download.html">More Downloads</a></span>
         </div>
       </div>
@@ -30,8 +30,13 @@
     </section>
     
     <section name="Overview">
-        This website will give you all information about how to use Citrus. Visit the following pages to find out wheather Citrus 
-        will help you solve your testing problems.
+        <p>Citrus supports you in testing message interfaces in service-oriented enterprise applications. Manual testing 
+        as well as individual mocks and simulators for interface partner software are not necessary. Instead Citrus 
+        enables integration tests in an automated way with easy simulation of various message transports and powerful
+        message validation.</p>
+        
+        <p>This site gives you detailed information about how to use Citrus. Visit the following pages and find out how Citrus 
+        helps you to accomplish fully automated integration tests of message-based enterprise applications.</p>
         
         <ul>
           <li>Find out why testing can be a hard challenge: <a href="introduction.html">Why use Citrus?</a></li>
@@ -41,17 +46,30 @@
           <li>Check out the <a href="tutorials.html">Tutorials</a> section</li>
         </ul>
     </section>
+    
+    <section name="Resources">
+      <p>
+        Find Citrus code and other resources at the following locations
+        <ul> 
+          <li>Sources: <a href="http://github.com/christophd/citrus">GitHub</a></li>
+          <li>Continuous Build: <a href="http://labs.consol.de/hudson/">Hudson</a></li>
+          <li>Code quality: <a href="http://labs.consol.de/sonar/">Sonar</a></li>
+          <li>Forum: <a href="http://citrus.895196.n3.nabble.com/">Nabble</a></li>
+          <li>Blog: <a href="http://labs.consol.de/tags/citrus">ConSol Labs</a></li>
+        </ul> 
+      </p>
+    </section>
      
     <section name="Technologies">
       <p>
-        Citrus uses following technologies
+        Citrus uses following technologies and tools
         <ul> 
           <li><a href="http://www.springsource.org">Spring 2.5.x</a> as the glue for everything</li>
           <li><a href="http://www.springsource.org/spring-integration">Spring Integration 1.0.4</a> as messaging solution</li>
           <li><a href="http://testng.org/">TestNG</a> runs Citrus tests</li>
           <li><a href="http://www.slf4j.org/">SLF4J</a> for logging</li>
           <li><a href="http://maven.apache.org">Maven</a> as build tool with support for multi module projects</li>
-          <li><a href="http://www.atlassian.com/software/bamboo">Bamboo</a> as build management tool for continuous integration</li>
+          <li><a href="http://hudson-ci.org/">Hudson</a> as build management tool for continuous integration</li>
         </ul> 
       </p>
     </section>
