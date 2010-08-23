@@ -15,30 +15,33 @@
   </properties>
   
   <body>
-    <release version="1.2-SNAPSHOT" date="18.08.2010" description="1.2 snapshot release">
+    <release version="1.2-SNAPSHOT" date="18.08.2010" description="Latest snapshot release">
         <action dev="philkom" type="update">
           #139 Dependency cleanup - removed unused dependencies and updated versions
         </action>
         <action dev="philkom" type="add">
           #241 Validate multiple db rows
         </action>
-		<action dev="philkom" type="add">
+        <action dev="philkom" type="add">
           #242 XSLT test action
         </action>
-		<action dev="philkom" type="add">
+        <action dev="philkom" type="add">
           #305 Groovy XML message validation
         </action>
-		<action dev="philkom" type="add">
+        <action dev="philkom" type="add">
           #306 Groovy MarkupBuilder
         </action>
-		<action dev="philkom" type="add">
+        <action dev="philkom" type="add">
           #304 TestContext in Groovy action
         </action>
-		<action dev="philkom" type="add">
+        <action dev="christophd" type="add">
+          #315 HTTP headers in SOAP message validation
+        </action>
+        <action dev="philkom" type="add">
           #272 Variable support in property loader
         </action>
     </release>
-	
+    
     <release version="1.1" date="12.08.2010" description="1.1 release">
         <action dev="mm" type="add">
           #313 Log message when validation fails
