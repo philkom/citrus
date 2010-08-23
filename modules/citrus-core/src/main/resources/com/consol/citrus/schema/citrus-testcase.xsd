@@ -57,6 +57,13 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:choice>
+                            <xs:element name="payload">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+                                    </xs:sequence>
+                                </xs:complexType>                               
+                            </xs:element>
                             <xs:element name="data" type="xs:string"/>
                             <xs:element name="resource">
                                 <xs:complexType>
@@ -136,6 +143,15 @@
                     <xs:sequence>
                         <xs:choice>
                             <xs:sequence minOccurs="0">
+                                <xs:element name="payload">
+                                    <xs:complexType>
+                                        <xs:sequence>
+                                            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+                                        </xs:sequence>
+                                    </xs:complexType>                               
+                                </xs:element>
+                            </xs:sequence>
+                            <xs:sequence minOccurs="0">
                                 <xs:choice>
                                     <xs:element name="data" type="xs:string"/>
                                     <xs:element name="resource">
@@ -183,12 +199,12 @@
                             <xs:sequence>
                                 <xs:element name="validation-script">
                                     <xs:complexType mixed="true">
-                                    	<xs:simpleContent>
-                                    		<xs:extension base="xs:string">
-                                    			<xs:attribute name="type" type="xs:string"/>
-                                        		<xs:attribute name="file" type="xs:string"/>
-                                    		</xs:extension>                                    	
-                                    	</xs:simpleContent>
+                                        <xs:simpleContent>
+                                            <xs:extension base="xs:string">
+                                                <xs:attribute name="type" type="xs:string"/>
+                                                <xs:attribute name="file" type="xs:string"/>
+                                            </xs:extension>
+                                        </xs:simpleContent>
                                     </xs:complexType>
                                 </xs:element>
                             </xs:sequence>
@@ -327,18 +343,18 @@
                 </xs:choice>
                 <xs:element name="validate" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
-	                	<xs:sequence>
-	                		<xs:element name="values" minOccurs="0">
-	                			<xs:complexType>
-	                				<xs:sequence>
-	                					<xs:element name="value" type="xs:string" maxOccurs="unbounded"/>
-	                				</xs:sequence>                    			
-	                			</xs:complexType>
-	                		</xs:element>
-	                	</xs:sequence>
-	                    <xs:attribute name="column" type="xs:string" use="required"/>
-	                    <xs:attribute name="value" type="xs:string"/>
-	                </xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="values" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="value" type="xs:string" maxOccurs="unbounded"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="column" type="xs:string" use="required"/>
+                        <xs:attribute name="value" type="xs:string"/>
+                    </xs:complexType>
                 </xs:element>
                 <xs:element name="extract" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
@@ -632,9 +648,9 @@
                 <xs:element ref="description" minOccurs="0"/>
                 <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
-                    	<xs:sequence>
-                    		<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1" />
-                    	</xs:sequence>
+                        <xs:sequence>
+                            <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1" />
+                        </xs:sequence>
                         <xs:attribute name="name" type="xs:string" use="required"/>
                         <xs:attribute name="value" type="xs:string" use="optional"/>
                     </xs:complexType>
@@ -645,27 +661,27 @@
     </xs:element>
     
     <xs:element name="transform">
-    	<xs:complexType>
-    		<xs:sequence>
-    			<xs:choice>
-    				<xs:element name="xml-data" type="xs:string"/>
-    				<xs:element name="xml-resource">
-    					<xs:complexType>
-                        	<xs:attribute name="file" type="xs:string" use="required"/>
-                        </xs:complexType>    				
-    				</xs:element>
-    			</xs:choice>
-    			<xs:choice>
-    				<xs:element name="xslt-data" type="xs:string"></xs:element>
-    				<xs:element name="xslt-resource">
-    					<xs:complexType>
-                        	<xs:attribute name="file" type="xs:string" use="required"/>
-                        </xs:complexType>    				
-    				</xs:element>
-    			</xs:choice>
-    		</xs:sequence>
-    		<xs:attribute name="variable" type="xs:string" use="required"/>
-    	</xs:complexType>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element name="xml-data" type="xs:string"/>
+                    <xs:element name="xml-resource">
+                        <xs:complexType>
+                            <xs:attribute name="file" type="xs:string" use="required"/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+                <xs:choice>
+                    <xs:element name="xslt-data" type="xs:string"></xs:element>
+                    <xs:element name="xslt-resource">
+                        <xs:complexType>
+                            <xs:attribute name="file" type="xs:string" use="required"/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="variable" type="xs:string" use="required"/>
+        </xs:complexType>
     </xs:element>
     
 </xs:schema>

@@ -186,6 +186,28 @@
     <para>The message header is manipulated too. So Citrus uses name-value pairs like &quot;Operation&quot; and &quot;RequestTag&quot; in the example above to
     set the message's header entries.</para>
     
+    <para>In case you don't like to define the message payload in a CDATA section, you have the possibility, to use &lt;payload&gt; instead of &lt;data&gt;
+    (since version 1.2-SNAPSHOT). This has the advantage, that the payload can be validated with the XML schema you used and with special XML editors you 
+    may use the auto completion feature.</para>
+    
+    <programlisting>&lt;testcase name=&quot;sendMessageTest&quot;&gt;
+    &lt;actions&gt;
+        &lt;send with=&quot;helloRequestSender&quot;&gt;
+            &lt;message&gt;
+                &lt;payload&gt;
+                    &lt;HelloRequest xmlns=&quot;http://www.consol.de/schemas/samples/sayHello.xsd&quot;&gt;
+                        &lt;MessageId&gt;${messageId}&lt;/MessageId&gt;
+                        &lt;CorrelationId&gt;${correlationId}&lt;/CorrelationId&gt;
+                        &lt;User&gt;${user}&lt;/User&gt;
+                        &lt;Text&gt;Hello TestFramework&lt;/Text&gt;
+                    &lt;/HelloRequest&gt;
+                &lt;/payload&gt;
+            &lt;/message&gt;
+            ...
+        &lt;/send&gt;
+    &lt;/actions&gt;
+&lt;/testcase&gt;</programlisting>
+    
     <para>This is how you send messages in Citrus. The test case is responsible for constructing the message content while predefined message senders are reused to publish 
     the messages. The variable support in message payload and message header enables you to add dynamic values.</para>
   </section>

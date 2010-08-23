@@ -18,6 +18,10 @@ package com.consol.citrus.config.xml;
 
 import java.util.*;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -27,7 +31,14 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.consol.citrus.exceptions.CitrusRuntimeException;
+import com.consol.citrus.util.XMLUtils;
 
 /**
  * Bean definition parser for send action in test case.
@@ -57,6 +68,44 @@ public class SendMessageActionParser implements BeanDefinitionParser {
 
         Element messageElement = DomUtils.getChildElementByTagName(element, "message");
         if (messageElement != null) {
+        	
+        	Element payloadElement = DomUtils.getChildElementByTagName(messageElement, "payload");
+            if (payloadElement != null) {
+                //remove text nodes from children (empty lines etc.)
+                NodeList childNodes = payloadElement.getChildNodes();
+                for(int i = 0; i < childNodes.getLength(); i++) {
+                    if (childNodes.item(i).getNodeType() == Node.TEXT_NODE) {
+                        payloadElement.removeChild(childNodes.item(i));
+                    }
+                }
+                if (payloadElement.hasChildNodes()) {
+                    NodeList rootElements = payloadElement.getChildNodes();
+                    if (rootElements.getLength() > 1) {
+                        StringBuilder nodeNames = new StringBuilder();
+                        for(int i = 0; i < rootElements.getLength(); i++) {
+                            nodeNames.append("\n").append(rootElements.item(i).getNodeName());
+                        }
+                        throw new CitrusRuntimeException("It is not allowed to define more than one root element in payload! Found:" +
+                                nodeNames.toString());
+                    }  else {
+                        try {
+                            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                            DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
+                            Document payload = docBuilder.newDocument();
+                            payload.appendChild(payload.importNode(rootElements.item(0), true));
+                            builder.addPropertyValue("messageData", XMLUtils.serialize(payload));
+                        } catch (DOMException e) {
+                            throw new CitrusRuntimeException(e);
+                        } catch (ParserConfigurationException e) {
+                            throw new CitrusRuntimeException(e);
+                        }
+                    }
+                } else { //payload has no child nodes -> empty message
+                    builder.addPropertyValue("messageData", "");
+                    throw new CitrusRuntimeException("Message is empty!");
+                }
+            }
+
             Element xmlDataElement = DomUtils.getChildElementByTagName(messageElement, "data");
             if (xmlDataElement != null) {
                 builder.addPropertyValue("messageData", DomUtils.getTextValue(xmlDataElement));
