@@ -571,6 +571,8 @@
             <xs:simpleContent>
                 <xs:extension base="xs:string">
                     <xs:attribute name="resource" type="xs:string"/>
+                    <xs:attribute name="use-script-template" type="xs:boolean"/>
+                    <xs:attribute name="script-template" type="xs:string"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>

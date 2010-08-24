@@ -18,6 +18,7 @@ package com.consol.citrus.script;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.consol.citrus.exceptions.CitrusRuntimeException;
@@ -36,7 +37,7 @@ public class GroovyActionTest extends AbstractBaseTest {
     }
     
     @Test
-    public void testFileResource() {
+    public void testScriptResource() {
         GroovyAction bean = new GroovyAction();
         bean.setFileResource(new ClassPathResource("com/consol/citrus/script/example.groovy"));
         bean.execute(context);
@@ -50,34 +51,88 @@ public class GroovyActionTest extends AbstractBaseTest {
     }
     
     @Test(expectedExceptions = {CitrusRuntimeException.class})
-    public void testFileNotFound() {
+    public void testScriptResourceNotFound() {
         GroovyAction bean = new GroovyAction();
         bean.setFileResource(new FileSystemResource("some/wrong/path/test.groovy"));
         bean.execute(context);
     }
     
     @Test
-    public void testScriptWithClassDefinition() {
+    public void testCustomScriptExecutorImplementation() {
         GroovyAction bean = new GroovyAction();
-        StringBuilder sb = new StringBuilder();
-        sb.append("import com.consol.citrus.*\n");
-        sb.append("import com.consol.citrus.variable.*\n");
-        sb.append("import com.consol.citrus.context.TestContext\n");
-        sb.append("import com.consol.citrus.script.GroovyAction.ScriptExecutor\n\n");
-        sb.append("public class GScript implements ScriptExecutor {\n");
-        sb.append("public void execute(TestContext context) {\n");
-        sb.append("context.setVariable(\"var\", \"Script with class definition test successful.\")\n");
-        sb.append("println context.getVariable(\"var\")\n");
-        sb.append("}}");
-        bean.setScript(sb.toString());
+        
+        String script = "import com.consol.citrus.*\n" +
+        		"import com.consol.citrus.variable.*\n" +
+        		"import com.consol.citrus.context.TestContext\n" +
+        		"import com.consol.citrus.script.GroovyAction.ScriptExecutor\n\n" +
+        		"public class GScript implements ScriptExecutor {\n" +
+        		"public void execute(TestContext context) {\n" +
+        		    "context.setVariable('text', 'Script with class definition test successful.')\n" +
+        		    "println context.getVariable('text')\n" +
+        		"}}";
+        
+        bean.setScript(script);
         bean.execute(context);
     }
     
     @Test
-    public void testScriptWithoutClassDefinition() {
+    public void testCustomClassImplementation() {
         GroovyAction bean = new GroovyAction();
-        bean.setScript("context.setVariable(\"var\", \"Script without class definition test successful.\")\n" +
-        		"println context.getVariable(\"var\")");
+        
+        String script = "public class CustomClass {\n" +
+                "public void run() {\n" +
+                    "println 'Just executed custom class implementation'\n" +
+                "}}";
+        
+        bean.setScript(script);
         bean.execute(context);
+    }
+    
+    @Test
+    public void testNoScriptTemplate() {
+        GroovyAction bean = new GroovyAction();
+        
+        bean.setUseScriptTemplate(false);
+        
+        String script = "println 'Just executed pure groovy code'";
+        
+        bean.setScript(script);
+        bean.execute(context);
+    }
+    
+    @Test
+    public void testAutomaticScriptExecutorWrapper() {
+        GroovyAction bean = new GroovyAction();
+        bean.setScript("context.setVariable('text', 'Automatic script wrapping works!')\n" +
+        		       "println context.getVariable('text')");
+        bean.execute(context);
+    }
+    
+    @Test
+    public void testCustomScriptTemplate() {
+        GroovyAction bean = new GroovyAction();
+        
+        bean.setScriptTemplateResource(new ClassPathResource("custom-script-template.groovy", GroovyActionTest.class));
+        
+        bean.setScript("Assert.assertEquals(context.getVariable('scriptTemplateVar'), 'It works!')");
+        bean.execute(context);
+    }
+    
+    @Test
+    public void testInvalidScriptTemplate() {
+        GroovyAction bean = new GroovyAction();
+        
+        bean.setScriptTemplateResource(new ClassPathResource("invalid-script-template.groovy", GroovyActionTest.class));
+        
+        bean.setScript("println 'This should not work!'");
+        
+        try {
+            bean.execute(context);
+        } catch (CitrusRuntimeException e) {
+            Assert.assertTrue(e.getMessage().startsWith("Invalid script template"));
+            return;
+        }
+        
+        Assert.fail("Missing exception because of invalid script template");
     }
 }
