@@ -26,6 +26,8 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.util.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.*;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 
 import com.consol.citrus.*;
 import com.consol.citrus.TestCaseMetaInfo.Status;
@@ -87,6 +89,16 @@ public abstract class AbstractTestNGCitrusTest extends AbstractTestNGSpringConte
     public void beforeTest(ITestContext testContext) {
         TestSuite suite = getTestSuite(testContext.getSuite().getName());
         suite.beforeTest();
+    }
+    
+    /**
+     * Runs tasks after tests.
+     * @param testContext the test context.
+     */
+    @AfterClass
+    public void afterTest(ITestContext testContext) {
+        TestSuite suite = getTestSuite(testContext.getSuite().getName());
+        suite.afterTest();
     }
 
     /**

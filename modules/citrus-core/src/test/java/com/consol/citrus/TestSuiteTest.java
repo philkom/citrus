@@ -26,7 +26,6 @@ import com.consol.citrus.TestCaseMetaInfo.Status;
 import com.consol.citrus.actions.EchoAction;
 import com.consol.citrus.actions.FailAction;
 import com.consol.citrus.exceptions.CitrusRuntimeException;
-import com.consol.citrus.report.TestListeners;
 import com.consol.citrus.report.TestSuiteListeners;
 import com.consol.citrus.testng.AbstractBaseTest;
 
@@ -36,9 +35,6 @@ import com.consol.citrus.testng.AbstractBaseTest;
 public class TestSuiteTest extends AbstractBaseTest {
     @Autowired
     TestSuiteListeners testSuiteListeners;
-    
-    @Autowired
-    TestListeners testListeners;
     
     @Test
     public void testBeforeSuite() {
@@ -58,7 +54,7 @@ public class TestSuiteTest extends AbstractBaseTest {
         testsuite.setTestSuiteListeners(testSuiteListeners);
         
         TestAction beforeAction = new EchoAction();
-        testsuite.setTasksBefore(Collections.singletonList(beforeAction));
+        testsuite.setActionsBeforeSuite(Collections.singletonList(echoAction));
         
         Assert.assertTrue(testsuite.beforeSuite());
     }
@@ -81,7 +77,7 @@ public class TestSuiteTest extends AbstractBaseTest {
         testsuite.setTestSuiteListeners(testSuiteListeners);
         
         TestAction failBean = new FailAction();
-        testsuite.setTasksBefore(Collections.singletonList(failBean));
+        testsuite.setActionsBeforeSuite(Collections.singletonList(failBean));
         
         Assert.assertFalse(testsuite.beforeSuite());
     }
@@ -104,7 +100,7 @@ public class TestSuiteTest extends AbstractBaseTest {
         testsuite.setTestSuiteListeners(testSuiteListeners);
         
         TestAction afterAction = new EchoAction();
-        testsuite.setTasksAfter(Collections.singletonList(afterAction));
+        testsuite.setActionsAfterSuite(Collections.singletonList(afterAction));
         
         Assert.assertTrue(testsuite.afterSuite());
     }
@@ -127,13 +123,13 @@ public class TestSuiteTest extends AbstractBaseTest {
         testsuite.setTestSuiteListeners(testSuiteListeners);
         
         TestAction failBean = new FailAction();
-        testsuite.setTasksAfter(Collections.singletonList(failBean));
+        testsuite.setActionsAfterSuite(Collections.singletonList(failBean));
         
         Assert.assertFalse(testsuite.afterSuite());
     }
     
     @Test
-    public void testTasksBetween() {
+    public void testBeforeTest() {
         TestSuite testsuite = new TestSuite();
         
         TestCase testcase1 = new TestCase();
@@ -160,14 +156,14 @@ public class TestSuiteTest extends AbstractBaseTest {
         
         testsuite.setTestSuiteListeners(testSuiteListeners);
         
-        TestAction betweenAction = new EchoAction();
-        testsuite.setTasksBetween(Collections.singletonList(betweenAction));
+        TestAction beforeAction = new EchoAction();
+        testsuite.setActionsBeforeTest(Collections.singletonList(beforeAction));
         
         testsuite.beforeTest();
     }
     
     @Test(expectedExceptions = CitrusRuntimeException.class)
-    public void testFailTasksBetween() {
+    public void testFailBeforeTest() {
         TestSuite testsuite = new TestSuite();
         
         TestCase testcase1 = new TestCase();
@@ -195,8 +191,76 @@ public class TestSuiteTest extends AbstractBaseTest {
         testsuite.setTestSuiteListeners(testSuiteListeners);
         
         TestAction failBean = new FailAction();
-        testsuite.setTasksBetween(Collections.singletonList(failBean));
-
+        testsuite.setActionsBeforeTest(Collections.singletonList(failBean));
+        
         testsuite.beforeTest();
+    }
+    
+    @Test
+    public void testAfterTest() {
+        TestSuite testsuite = new TestSuite();
+        
+        TestCase testcase1 = new TestCase();
+        testcase1.setTestContext(createTestContext());
+        testcase1.setName("TestCase1");
+        TestCaseMetaInfo metaInfo1 = new TestCaseMetaInfo();
+        metaInfo1.setStatus(Status.FINAL);
+        
+        testcase1.setMetaInfo(metaInfo1);
+        
+        TestAction echoAction = new EchoAction();
+        testcase1.setActions(Collections.singletonList(echoAction));
+        
+        TestCase testcase2 = new TestCase();
+        testcase2.setTestContext(createTestContext());
+        testcase2.setName("TestCase2");
+        TestCaseMetaInfo metaInfo2 = new TestCaseMetaInfo();
+        metaInfo2.setStatus(Status.FINAL);
+        
+        testcase2.setMetaInfo(metaInfo2);
+        
+        TestAction echoAction2 = new EchoAction();
+        testcase2.setActions(Collections.singletonList(echoAction2));
+        
+        testsuite.setTestSuiteListeners(testSuiteListeners);
+        
+        TestAction afterAction = new EchoAction();
+        testsuite.setActionsAfterTest(Collections.singletonList(afterAction));
+        
+        testsuite.afterTest();
+    }
+    
+    @Test(expectedExceptions = CitrusRuntimeException.class)
+    public void testFailAfterTest() {
+        TestSuite testsuite = new TestSuite();
+        
+        TestCase testcase1 = new TestCase();
+        testcase1.setTestContext(createTestContext());
+        testcase1.setName("TestCase1");
+        TestCaseMetaInfo metaInfo1 = new TestCaseMetaInfo();
+        metaInfo1.setStatus(Status.FINAL);
+        
+        testcase1.setMetaInfo(metaInfo1);
+        
+        TestAction echoAction = new EchoAction();
+        testcase1.setActions(Collections.singletonList(echoAction));
+        
+        TestCase testcase2 = new TestCase();
+        testcase2.setTestContext(createTestContext());
+        testcase2.setName("TestCase2");
+        TestCaseMetaInfo metaInfo2 = new TestCaseMetaInfo();
+        metaInfo2.setStatus(Status.FINAL);
+        
+        testcase2.setMetaInfo(metaInfo2);
+        
+        TestAction echoAction2 = new EchoAction();
+        testcase2.setActions(Collections.singletonList(echoAction2));
+        
+        testsuite.setTestSuiteListeners(testSuiteListeners);
+        
+        TestAction failBean = new FailAction();
+        testsuite.setActionsAfterTest(Collections.singletonList(failBean));
+        
+        testsuite.afterTest();
     }
 }

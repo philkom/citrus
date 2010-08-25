@@ -19,6 +19,7 @@ package com.consol.citrus.junit;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,16 @@ public abstract class AbstractJUnit4CitrusTest extends AbstractJUnit4SpringConte
         TestSuite suite= getTestSuite();
         
         suite.beforeTest();
+    }
+    
+    /**
+     * Run tasks after each test case.
+     */
+    @After
+    public void afterTest() {
+        TestSuite suite= getTestSuite();
+        
+        suite.afterTest();
     }
     
     /**

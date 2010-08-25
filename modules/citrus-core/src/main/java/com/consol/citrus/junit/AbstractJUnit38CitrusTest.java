@@ -68,6 +68,15 @@ public abstract class AbstractJUnit38CitrusTest extends AbstractJUnit38SpringCon
     }
     
     /**
+     * Run tasks after each test case.
+     */
+    protected void tearDown() {
+        TestSuite suite= getTestSuite();
+        
+        suite.afterTest();
+    }
+    
+    /**
      * Execute the test case.
      */
     protected void executeTest() {

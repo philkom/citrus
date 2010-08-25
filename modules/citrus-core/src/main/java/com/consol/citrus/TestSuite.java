@@ -16,7 +16,6 @@
 
 package com.consol.citrus;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ import com.consol.citrus.report.TestSuiteListeners;
  * followed by a list of tasks at the end.
  *
  * Usually these initializing/destroying tasks are
- * injected via spring IoC container.
+ * injected via autowiring from the spring IoC container.
  *
  * After initialization the test suite loads and runs a given set of test cases via Spring
  * application context. The context usually is handed over in init method.
@@ -48,10 +47,15 @@ import com.consol.citrus.report.TestSuiteListeners;
  *
  */
 public class TestSuite implements BeanNameAware {
-    /** List of tasks before, between and after */
-    private List<TestAction> tasksBefore = new ArrayList<TestAction>();
-    private List<TestAction> tasksBetween = new ArrayList<TestAction>();
-    private List<TestAction> tasksAfter = new ArrayList<TestAction>();
+    /** List of actions before/after suite/test*/
+    @Autowired(required=false)
+    private BeforeSuite actionsBeforeSuite = new BeforeSuite();
+    @Autowired(required=false)
+    private BeforeTest actionsBeforeTest = new BeforeTest();
+    @Autowired(required=false)
+    private AfterTest actionsAfterTest = new AfterTest();
+    @Autowired(required=false)
+    private AfterSuite actionsAfterSuite = new AfterSuite();
 
     /** Test suite name */
     private String name = "";
@@ -75,9 +79,9 @@ public class TestSuite implements BeanNameAware {
     public boolean beforeSuite() {
         testSuiteListener.onStart(this);
 
-        log.info("Found " + tasksBefore.size() + " tasks in init phase");
+        log.info("Found " + actionsBeforeSuite.size() + " task(s) in init phase");
 
-        for(TestAction action: tasksBefore)  {
+        for(TestAction action: actionsBeforeSuite)  {
             try {
                 /* Executing test action and validate its success */
                 action.execute(context);
@@ -100,6 +104,42 @@ public class TestSuite implements BeanNameAware {
     }
 
     /**
+     * Method running tasks before a test case.
+     */
+    public void beforeTest() {
+        if (actionsBeforeTest == null || actionsBeforeTest.isEmpty()) {
+            return;
+        }
+
+        /* execute tasks between test cases */
+        if (log.isDebugEnabled()) {
+            log.debug("Found " + actionsBeforeTest.size() + " task(s) before test");
+        }
+
+        for(TestAction action: actionsBeforeTest)  {
+            action.execute(context);
+        }
+    }
+    
+    /**
+     * Method running tasks after a test case.
+     */
+    public void afterTest() {
+        if (actionsAfterTest == null || actionsAfterTest.isEmpty()) {
+            return;
+        }
+
+        /* execute tasks between test cases */
+        if (log.isDebugEnabled()) {
+            log.debug("Found " + actionsAfterTest.size() + " task(s) after test");
+        }
+
+        for(TestAction action: actionsAfterTest)  {
+            action.execute(context);
+        }
+    }
+
+    /**
      * Execute tasks after test suite
      * @throws CitrusRuntimeException
      * @return boolean flag marking success
@@ -110,10 +150,10 @@ public class TestSuite implements BeanNameAware {
         testSuiteListener.onFinish(this);
 
         if (log.isDebugEnabled()) {
-            log.info("Found " + tasksAfter.size() + " tasks after");
+            log.debug("Found " + actionsAfterSuite.size() + " task(s) after suite");
         }
 
-        for(TestAction action: tasksAfter)  {
+        for(TestAction action: actionsAfterSuite)  {
             try {
                 /* Executing test action and validate its success */
                 action.execute(context);
@@ -134,49 +174,39 @@ public class TestSuite implements BeanNameAware {
 
         return success;
     }
-
+    
     /**
-     * Method running tasks before a test case.
+     * Set the list of actions, that will be executed before TestSuite.
+     * @param actionsBeforeSuite
      */
-    public void beforeTest() {
-        if (tasksBetween == null || tasksBetween.isEmpty()) {
-            return;
-        }
-
-        /* execute tasks between test cases */
-        if (log.isDebugEnabled()) {
-            log.debug("Found " + tasksBetween.size() + " tasks between tests");
-        }
-
-        for(TestAction action: tasksBetween)  {
-            action.execute(context);
-        }
+    public void setActionsBeforeSuite(List<TestAction> actionsBeforeSuite) {
+        this.actionsBeforeSuite.addAll(actionsBeforeSuite);
     }
-
+    
     /**
-     * Injected tasks after.
-     * @param tasksAfter
+     * Set the list of actions, that will be executed before TestCase.
+     * @param actionsBeforeTest
      */
-    public void setTasksAfter(List<TestAction> tasksAfter) {
-        this.tasksAfter = tasksAfter;
+    public void setActionsBeforeTest(List<TestAction> actionsBeforeTest) {
+        this.actionsBeforeTest.addAll(actionsBeforeTest);
     }
-
+    
     /**
-     * Injected tasks before
-     * @param tasksBefore
+     * Set the list of actions, that will be executed after TestCase.
+     * @param actionsAfterTest
      */
-    public void setTasksBefore(List<TestAction> tasksBefore) {
-        this.tasksBefore = tasksBefore;
+    public void setActionsAfterTest(List<TestAction> actionsAfterTest) {
+        this.actionsAfterTest.addAll(actionsAfterTest);
     }
-
+    
     /**
-     * Injected tasks before test.
-     * @param tasksBetween
+     * Set the list of actions, that will be executed after TestSuite.
+     * @param actionsAfterSuite
      */
-    public void setTasksBetween(List<TestAction> tasksBetween) {
-        this.tasksBetween = tasksBetween;
+    public void setActionsAfterSuite(List<TestAction> actionsAfterSuite) {
+        this.actionsAfterSuite.addAll(actionsAfterSuite);
     }
-
+        
     /**
      * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
      */

@@ -9,49 +9,83 @@
     <section id="testsuite-tasks">
         <title>Tasks before, between and after the test run</title>
         
-        <para>A tester can influence the behavior of a test suite before, after and during the test run. See the next code example to find
-        out how it works:</para>
+        <para>A tester can execute several actions before and after test suites, as well as before and after test cases. See the next code example, 
+        to find out how it works:</para>
         
-        <programlisting>&lt;bean name=&quot;integrationTests&quot; 
-         class=&quot;com.consol.citrus.TestSuite&quot;&gt;
-    &lt;property name=&quot;tasksBefore&quot;&gt;
+        <programlisting>&lt;bean name=&quot;integrationTests&quot; class=&quot;com.consol.citrus.TestSuite&quot;/&gt;
+    
+&lt;bean class=&quot;com.consol.citrus.BeforeSuite&quot;&gt;
+    &lt;property name=&quot;actions&quot;&gt;
         &lt;list&gt;
-            <!-- list of actions -->
+            &lt;bean class=&quot;com.consol.citrus.actions.ExecuteSQLAction&quot;&gt;
+                &lt;property name=&quot;dataSource&quot; ref=&quot;testDataSource&quot;/&gt;
+                &lt;property name=&quot;statements&quot;&gt;
+                    &lt;list&gt;
+                        &lt;value&gt;CREATE TABLE TEST_TABLE (TEST_COLUMN char(250))&lt;/value&gt;
+                    &lt;/list&gt;
+                &lt;/property&gt;
+            &lt;/bean&gt;
+            [...]
         &lt;/list&gt;
     &lt;/property&gt;
+&lt;/bean&gt;
 
-    &lt;property name=&quot;tasksBetween&quot;&gt;
+&lt;bean class=&quot;com.consol.citrus.BeforeTest&quot;&gt;
+    &lt;property name=&quot;actions&quot;&gt;
         &lt;list&gt;
-            <!-- list of actions -->
+            &lt;ref bean=&quot;purgeJmsQueues&quot;&gt;
+            [...]
         &lt;/list&gt;
     &lt;/property&gt;
+&lt;/bean&gt;
 
-    &lt;property name=&quot;tasksAfter&quot;&gt;
+&lt;bean class=&quot;com.consol.citrus.AfterTest&quot;&gt;
+    &lt;property name=&quot;actions&quot;&gt;
         &lt;list&gt;
-            <!-- list of actions -->
+            &lt;bean name=&quot;printTestFinished&quot; class=&quot;com.consol.citrus.actions.EchoAction&quot;&gt;
+                &lt;property name=&quot;message&quot; value=&quot;************** Test finished **************&quot;/&gt;
+            &lt;/bean&gt;
+            [...]
         &lt;/list&gt;
     &lt;/property&gt;
+&lt;/bean&gt;
 
+&lt;bean class=&quot;com.consol.citrus.AfterSuite&quot;&gt;
+    &lt;property name=&quot;actions&quot;&gt;
+        &lt;list&gt;
+            &lt;bean class=&quot;com.consol.citrus.actions.ExecuteSQLAction&quot;&gt;
+                &lt;property name=&quot;dataSource&quot; ref=&quot;testDataSource&quot;/&gt;
+                &lt;property name=&quot;ignoreErrors&quot; value=&quot;true&quot;/&gt;
+                &lt;property name=&quot;statements&quot;&gt;
+                    &lt;list&gt;
+                        &lt;value&gt;DROP TABLE TEST_TABLE&lt;/value&gt;
+                    &lt;/list&gt;
+                &lt;/property&gt;
+            &lt;/bean&gt;
+            [...]
+        &lt;/list&gt;
+    &lt;/property&gt;
 &lt;/bean&gt;</programlisting>
         
-        <para>The test suite bean is of the type com.consol.citrus.TestSuite and offers the following properties to affect
-        the basic behavior:</para>
+        <para>For this case Citrus offers four beans, to specify, when the actions are executed:</para>
         
         <itemizedlist mark="opencircle">
             <listitem>
-                <para>tasksBefore: List of actions that will be executed before the first test is run</para>
+                com.consol.citrus.BeforeSuite<para>List of actions will be executed before the first test is run</para>
             </listitem>
             <listitem>
-                <para>tasksBetween: List of actions that will be executed in between every test</para>
+                com.consol.citrus.BeforeTest<para>List of actions will be executed before every test</para>
             </listitem>
             <listitem>
-                <para>tasksAfter: List of actions that will be executed after the last test has ended</para>
+                com.consol.citrus.AfterTest<para>List of actions will be executed after every test</para>
+            </listitem>
+            <listitem>
+                com.consol.citrus.AfterSuite<para>List of actions will be executed after the last test has ended</para>
             </listitem>
         </itemizedlist>
         
-        <para>The three task-sections before, in between and after the execution of tests are supposed to be used for
-        initializing and finishing tasks. All these tasks can easily be adjusted by adding or removing beans inside the &lt;list&gt; 
-        element.</para>
+        <para>This four task-sections are supposed to be used for initializing(before) and finishing(after) tasks. 
+        All these tasks can easily be adjusted by adding or removing beans of the type TestAction inside the &lt;list&gt; element.</para>
         
         <tip>
             <para>The framework offers special startup and shutdown actions that may start and stop server implementations. This might 
@@ -65,20 +99,5 @@
             and some messages might be left in some JMS queues. The next test then will be confronted with these invalid messages. Purging all JMS
             destinations between the tests is therefore a good idea.</para>
         </tip>
-    </section>
-    
-    <section id="testsuite-multiple">
-        <title>Multiple testsuites</title>
-        
-        <para>Sometimes it is useful to configure more than one of these test suite instances. You can think of test suites for 
-        unit testing, integration testing, performance testing and so on. Unit testing might require different actions before
-        the test run than integration testing and vice versa.</para>
-        
-        <para>You can simply define several beans of test suites in the Spring configuration. There could be one test suite
-        instance for unit testing and one for integration testing, with their individual configuration like separate
-        'tasksBefore' and different including patterns for tests.</para>
-        
-        <para>By default Citrus will start all available test suite instances in sequence. If you want to
-        start a certain instance explicitly you have to declare the name of the instance when starting Citrus.</para>
     </section>
 </chapter>
