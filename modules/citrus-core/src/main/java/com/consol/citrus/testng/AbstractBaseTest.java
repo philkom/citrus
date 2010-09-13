@@ -33,6 +33,7 @@ import com.consol.citrus.variable.GlobalVariables;
  */
 @ContextConfiguration(locations = {"classpath:com/consol/citrus/spring/root-application-ctx.xml",
                                    "classpath:citrus-context.xml",
+                                   "classpath:com/consol/citrus/spring/reporter-fix-ctx.xml",
                                    "classpath:com/consol/citrus/functions/citrus-function-ctx.xml"})
 public abstract class AbstractBaseTest extends AbstractTestNGSpringContextTests {
     /** Test context */
