@@ -34,6 +34,8 @@
     
     <bean class="com.consol.citrus.report.LoggingReporter"/>
     
+    <bean class="com.consol.citrus.report.HTMLReporter"/>
+    
     <bean class="com.consol.citrus.report.ReporterInvokingTestSuiteListener"/>
     
     <bean class="com.consol.citrus.report.FailureStackTestListener"/>

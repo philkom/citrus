@@ -1,0 +1,23 @@
+<tr class="@TestStyleClass@" onclick="toggleVisibilityById('@TestCaseName@Actions');" onmouseover="showTooltip('@TestCaseName@Info', event);" onmouseout="hideTooltip();">
+    <th>@TestCaseName@
+        <span class="tooltip" id="@TestCaseName@Info">
+        <b><i>@TestCaseName@</i></b><br>
+        <b>Author:</b> @TestAuthor@<br>
+        <b>Status:</b> @TestStatus@<br>
+        <b>Creation Date:</b> @TestCreationDate@<br>
+        <b>Last updated by:</b> @TestUpdater@<br>
+        <b>Last updated on:</b> @TestUpdateDate@<br>
+        <b>Description:</b> @TestDescription@<br>
+        </span>
+    </th>
+    <td>@Result@</td>
+</tr>
+<tr id="@TestCaseName@Actions" name="@SuiteName@" style="display: @ActionVisibility@;">
+    <td colspan="2">
+        <table class="testActions">
+            <tbody>
+                @TestActions@
+            </tbody>
+        </table>
+    </td>
+</tr>

@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Citrus Test Report</title>
+        <link rel="stylesheet" href="report/citrus-test-report.css" type="text/css" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <script type="text/javascript">            
+            function toggleVisibilityById(elementId) {
+                var element = document.getElementById(elementId);
+                if (element.style.display == "none") {
+                    element.style.display = "table-row";
+                } else {
+                    element.style.display = "none";
+                }
+            }
+            
+            function toggleVisibilityByName(elementName) {
+                var allElementsUnvisible = true;
+                for(i = 0; i < document.getElementsByName(elementName).length; i++) {
+                    var element = document.getElementsByName(elementName)[i];
+                    if (element.style.display == "table-row") {
+                        allElementsUnvisible = false;
+                    }
+                };
+                for(i = 0; i < document.getElementsByName(elementName).length; i++) {
+                    var element = document.getElementsByName(elementName)[i];
+                    if (allElementsUnvisible == true) {
+                        element.style.display = "table-row";
+                    } else {
+                        element.style.display = "none";
+                    }
+                };
+            }
+            
+            var tooltipElement;
+            var delayer;
+            var delayTimeInMs = 800;
+            var cursorX;
+            var cursorY;
+            
+            function showTooltip(elementId, event) {
+                tooltipElement = document.getElementById(elementId);
+                cursorX = event.pageX ? event.pageX : window.event.clientX + document.documentElement.scrollLeft;
+                cursorY = event.pageY ? event.pageY : window.event.clientY + document.documentElement.scrollTop;
+                delayer = setTimeout('showTooltipDelayed();', delayTimeInMs);
+            }
+            
+            function showTooltipDelayed() {
+                tooltipElement.style.display = "block";
+                setTooltipPosition();
+            }
+            
+            function hideTooltip() {
+                clearTimeout(delayer);
+                tooltipElement.style.display = "none";
+            }
+            
+            function setTooltipPosition() {
+                if (tooltipElement != null && tooltipElement.style.display == "block") {
+                    var cursorPosLeft = cursorX + tooltipElement.offsetParent.scrollLeft - tooltipElement.offsetParent.offsetLeft;
+                    var cursorPosTop = cursorY + tooltipElement.offsetParent.scrollTop - tooltipElement.offsetParent.offsetTop;
+                    var tooltipCursorDistLeft = 20;
+                    var tooltipCursorDistTop = 10;
+                    var tooltipPosLeft = cursorPosLeft + tooltipCursorDistLeft;
+                    var tooltipPosTop = cursorPosTop + tooltipCursorDistTop
+                    var tooltipPosRight = tooltipPosLeft + tooltipElement.offsetWidth;
+                    var tooltipPosBottom = tooltipPosTop  + tooltipElement.offsetHeight;
+                    var windowWidth = window.innerWidth ? window.innerWidth + window.pageXOffset - 60 : document.documentElement.clientWidth + document.documentElement.scrollLeft - 40;
+                    var windowHeight = window.innerHeight ? window.innerHeight + window.pageYOffset - 150 : document.documentElement.clientHeight + document.documentElement.scrollTop -150;
+                    var newTooltipPosLeft = (tooltipPosRight > windowWidth) ? (tooltipPosLeft - (tooltipPosRight - windowWidth)) : tooltipPosLeft;
+                    var newTooltipPosTop = (tooltipPosBottom > windowHeight) ? (tooltipPosTop - (tooltipPosBottom - windowHeight)) : tooltipPosTop;
+                    tooltipElement.style.left = newTooltipPosLeft + "px";
+                    tooltipElement.style.top = newTooltipPosTop + "px";
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <img src="report/citrus_logo.png" alt="Citrus" id="logo"/>
+        <div id="content">
+            <div id="testSummary">
+                <div id="summaryTitle">Test summary</div>
+                <table id="summary">
+                    <tbody>
+                        <tr class="a">
+                            <th>TestSuites</th>
+                            <td>@TestSuiteCount@</td>
+                        </tr>
+                        <tr class="b">
+                            <th>Total Tests</th>
+                            <td>@TestCount@</td>
+                        </tr>
+                        <tr class="a">
+                            <th>Skipped Tests</th>
+                            <td>@SkippedTestCount@&nbsp;&nbsp;|&nbsp;&nbsp;@SkippedTestPercent@%</td>
+                        </tr>
+                        <tr class="b">
+                            <th>Failed Tests</th>
+                            <td>@FailedTestCount@&nbsp;&nbsp;|&nbsp;&nbsp;@FailedTestPercent@%</td>
+                        </tr>
+                        <tr class="a">
+                            <th>Successful Tests</th>
+                            <td>@SuccessfulTestCount@&nbsp;&nbsp;|&nbsp;&nbsp;@SuccessfulTestPercent@%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="testDetails">
+                @TestDetails@
+            </div>
+        </div>
+    </body>
+</html>

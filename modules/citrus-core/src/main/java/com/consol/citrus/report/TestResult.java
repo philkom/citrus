@@ -16,7 +16,11 @@
 
 package com.consol.citrus.report;
 
+import java.util.List;
+
 import org.springframework.util.StringUtils;
+
+import com.consol.citrus.TestCaseMetaInfo;
 
 
 /**
@@ -35,6 +39,21 @@ public class TestResult {
     /** Name of the test */
     private String testName;
     
+    /** Name of the suite */
+    private String suiteName;
+    
+    /** Meta Information of the test */
+    private TestCaseMetaInfo testInformation;
+    
+    /** Description of the test */
+    private String testDescription;
+    
+    /** List of TestAction names */
+    private List<String> testActionNames;
+    
+    /** Index of the failed TestAction */
+    private int failedActionIndex;
+
     /** Failure cause */
     private Throwable cause;
     
@@ -57,6 +76,46 @@ public class TestResult {
     public TestResult(String name, RESULT result, Throwable cause) {
         this.testName = name;
         this.result = result;
+        this.cause = cause;
+    }
+        
+    /**
+     * Constructor using all fields, for a detailed TestResult.
+     * @param name
+     * @param suite
+     * @param testInformation
+     * @param testDescription
+     * @param testActionNames
+     * @param result
+     */
+    public TestResult(String name, String suite, TestCaseMetaInfo testInformation, String testDescription, List<String> testActionNames, RESULT result) {
+        this.testName = name;
+        this.suiteName = suite;
+        this.testInformation = testInformation;
+        this.testDescription = testDescription;
+        this.testActionNames = testActionNames;
+        this.result = result;
+    }
+    
+    /**
+     * Constructor using all fields, for a detailed TestResult.
+     * @param name
+     * @param suite
+     * @param testInformation
+     * @param testDescription
+     * @param testActionNames
+     * @param result
+     * @param failedActionName
+     * @param cause
+     */
+    public TestResult(String name, String suite, TestCaseMetaInfo testInformation, String testDescription, List<String> testActionNames, RESULT result, int failedActionIndex, Throwable cause) {
+        this.testName = name;
+        this.suiteName = suite;
+        this.testInformation = testInformation;
+        this.testDescription = testDescription;
+        this.testActionNames = testActionNames;
+        this.result = result;
+        this.failedActionIndex = failedActionIndex;
         this.cause = cause;
     }
 
@@ -130,6 +189,54 @@ public class TestResult {
     }
 
     /**
+     * Getter for the suite name
+     * @return the suiteName
+     */
+    public String getSuiteName() {
+    	return suiteName;
+    }
+
+	/**
+	 * Setter for the suite name
+     * @param suiteName the suiteName to set
+     */
+    public void setSuiteName(String suiteName) {
+    	this.suiteName = suiteName;
+    }
+
+	/**
+	 * Getter for the test meta information
+     * @return the testInformation
+     */
+    public TestCaseMetaInfo getTestInformation() {
+        return testInformation;
+    }
+
+    /**
+     * Setter for the test meta information
+     * @param testInformation the testInformation to set
+     */
+    public void setTestInformation(TestCaseMetaInfo testInformation) {
+        this.testInformation = testInformation;
+    }
+
+    /**
+     * Getter for the test description
+     * @return the testDescription
+     */
+    public String getTestDescription() {
+        return testDescription;
+    }
+
+    /**
+     * Setter for the test description
+     * @param testDescription the testDescription to set
+     */
+    public void setTestDescription(String testDescription) {
+        this.testDescription = testDescription;
+    }
+
+    /**
      * Getter for test result.
      * @return the result
      */
@@ -143,5 +250,37 @@ public class TestResult {
      */
     public void setResult(RESULT result) {
         this.result = result;
+    }
+
+    /**
+     * Setter for TestAction names
+     * @param testActionNames the testActionNames to set
+     */
+    public void setTestActionNames(List<String> testActionNames) {
+        this.testActionNames = testActionNames;
+    }
+
+    /**
+     * Getter for TestAction names
+     * @return the testActionNames
+     */
+    public List<String> getTestActionNames() {
+        return testActionNames;
+    }
+
+    /**
+     * Setter for Failed TestAction name
+     * @param failedActionName the failedActionName to set
+     */
+    public void setFailedActionIndex(int failedActionIndex) {
+        this.failedActionIndex = failedActionIndex;
+    }
+
+    /**
+     * Getter for Failed TestAction name
+     * @return the failedActionName
+     */
+    public int getFailedActionIndex() {
+        return failedActionIndex;
     }
 }

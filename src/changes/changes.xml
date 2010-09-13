@@ -15,7 +15,10 @@
   </properties>
   
   <body>
-    <release version="1.2-SNAPSHOT" date="25.08.2010" description="Latest snapshot release">
+    <release version="1.2-SNAPSHOT" date="13.09.2010" description="Latest snapshot release">
+        <action dev="philkom" type="add">
+          #314 HTML test report
+        </action>
         <action dev="philkom" type="add">
           #247 Autowired list: BeforeSuite, BeforeTest, AfterTest, AfterSuite
         </action>

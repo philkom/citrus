@@ -1,0 +1,161 @@
+/* Stylesheet for Citrus test report site */
+
+body {
+  font-family: Verdana,Helvetica,Arial,sans-serif;
+  font-size: 12px;
+  text-align: left;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1% 1%;
+}
+
+/* General column settings */
+
+table th {
+  background-color: #BBBBBB;
+  color: #555555;
+  font-weight: bold;
+  text-align: left;
+  padding: 2px 4px;
+}
+
+table td {
+  width: 80px;
+  text-align: left;
+}
+
+/* Site has a logo and a container for content */
+
+#logo {
+  width: 450px;
+}
+
+#content {
+  position: relative;
+  top: 20px;
+  left: 1%;
+  width: 98%;
+}
+
+/* The content container includes the sections testSummary and testDetails */
+/* TestSummary section */
+
+#testSummary {
+  width: 400px;
+}
+
+#summaryTitle {
+  background-color: #CCCCCC;
+  background-image: url("icon_info_sml.gif");
+  background-position: 5px;
+  background-repeat: no-repeat;
+  color: #666666;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 4px 4px 4px 24px;
+}
+
+table#summary {
+  padding-left: 10px;
+  margin-left: 2px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+table tr.a {
+  background-color: #DDDDDD;
+}
+
+table tr.b {
+  background-color: #EEEEEE;
+}
+
+/* TestDetails section */
+
+#testDetails {
+  margin-top: 10px;
+}
+
+/* TestDetails contains TestSuites with TestCases in tables */
+
+.testSuite {
+  background-color: #CCCCCC;
+  background-image: url("h3.jpg");
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  color: #666666;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 4px 4px 4px 24px;
+  cursor: pointer;
+}
+
+table.testCases {
+  padding-left: 10px;
+  margin-left: 2px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+table.testCases tr th {
+  background-position: 5px;
+  background-repeat: no-repeat;
+  padding: 3px 0 3px 25px;
+  cursor: pointer;
+}
+
+/* Tooltips for TestCase meta information and description */
+
+table.testCases tr th span.tooltip {
+  display: none;
+  width: 350px;
+  position: absolute;
+  background-color: #CCCCCC;
+  border: 1px solid #EEEEEE;
+  font-size: 11px;
+  font-weight: normal;
+  padding: 3px;
+}
+
+/* TestCases contain TestActions as sub tables */
+
+table.testActions {
+  padding-left: 20px;
+  margin-left: 3px;
+  width: 100%;
+}
+
+table.testActions tr th {
+  cursor: auto;
+  font-size: 11px;
+}
+
+/* Background images and colors for the states ok/skipped/failed */
+
+table.testCases tr.ok {
+  background-color: #00CC88;
+}
+
+table.testCases tr.ok th {
+  background-image: url("icon_success_sml.gif");
+}
+
+table.testCases tr.skipped {
+  background-color: #FFFF66;
+}
+
+table.testCases tr.skipped th {
+  background-image: url("icon_warning_sml.gif");
+}
+
+table.testCases tr.failed {
+  background-color: #FF6666;
+}
+
+table.testCases tr.failed th {
+  background-image: url("icon_error_sml.gif");
+}
+
+table.testCases tr.stackTrace {
+  background-color: #DDDDDD;
+}

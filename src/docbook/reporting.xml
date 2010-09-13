@@ -60,4 +60,34 @@ TEST RESULTS citrus-default-testsuite
         as the build management tools (Hudson, Bamboo, CruiseControl, etc.) to find out how to integrate the tests results.</para>
     </section>
     
+    <section id="reporting-html">
+        <title>HTML reports</title>
+        
+        <para>Citrus also creates own HTML reports after the test run. You can find the report, named <emphasis>CitrusTestReport.html</emphasis>, 
+        under the target directory in your project.</para>
+        
+        <para>The HTML report consists of two parts:</para>
+        
+        <itemizedlist mark="opencircle">
+            <listitem>
+                <para>The test summary on top, which shows the total number of suites and tests.</para>
+            </listitem>
+            <listitem>
+                <para>A detailed part, where the testsuites are listed with the corresponding testcases underneath.</para>                
+            </listitem>
+        </itemizedlist>
+        
+        <para>A big advantage of this report is, that you can see immediately if all tests succeded or any of them failed. Every test is 
+        marked, according to its result, with a status icon and color.</para>
+        
+        <para>A click on a test reveals, which testactions were used in this testcase. On tests, that have failed, the view of actions is 
+        already opened and the action, which failed, is especially marked. The error message is also shown below that action.</para>
+        
+        <para>Additional informations on a test(e.g. creator, description, ...), are displayed via a tooltip, if you hover over the test.</para>
+        
+        <note>
+            <para>JavaScript should be active in your web browser, if you want to view the actions and the tooltips with informations.</para>
+        </note>
+    </section>
+    
 </chapter>
