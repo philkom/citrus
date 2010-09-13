@@ -541,20 +541,19 @@
   </section>
   
   <section id="groovy-utils">
-    <title>Groovy Utils for sending/receiving</title>
+    <title>Groovy utils for send and receive</title>
     
-    <para>Groovy offers some nice and easy to use utilities for working with XML messages. Since version 1.2-SNAPSHOT they can be used 
-    in Citrus with the send and receive test actions.</para>
+    <para>Groovy offers some nice and easy to use features for working with XML structures. You can use those in Citrus within the send and receive test actions in order
+    to construct message payloads via Groovy scripts.</para>
     
     <section id="groovy-markupbuilder">
-        <title>Groovy MarkupBuilder (message creation)</title>
+        <title>Groovy MarkupBuilder</title>
         
-        <para>With the Groovy MarkupBuilder the tester may define XML messages in a simple way, without using the typical XML syntax. 
-        For the example we use the send action from <xref linkend="message-sending"/>, with the difference, that we use script instead of 
-        data part and generate the same XML message with the MarkupBuilder:</para>
+        <para>With the Groovy MarkupBuilder the tester may build XML message payloads in a simple way, without having to write the typical XML tag overhead. 
+        For example we use the code listing from <xref linkend="message-sending"/>, but now we use a Groovy script instead of plain CDATA XML section. The Groovy MarkupBuilder 
+        generates the XML message payload with exactly the same result:</para>
         
-        <programlisting>
-  &lt;send with=&quot;getCustomerRequestMessageSender&quot;&gt;
+        <programlisting>&lt;send with=&quot;getCustomerRequestMessageSender&quot;&gt;
       &lt;message&gt;
           &lt;script&gt;
               xml.RequestMessage{
@@ -578,29 +577,28 @@
           &lt;element name=&quot;Operation&quot; value=&quot;GetCustomer&quot;/&gt;
           &lt;element name=&quot;RequestTag&quot; value=&quot;${requestTag}&quot;/&gt;
       &lt;/header&gt;
-  &lt;/send&gt;
-        </programlisting>
+  &lt;/send&gt;</programlisting>
         
-        <para>To define a XML message with the MarkupBuilder, we use the script-tag inside the message-tag. As you can see from the example, 
-        the tester may use the MarkupBuilder with "xml.ROOT-ELEMENT{ CHILD-ELEMENTS }". The XML messages can be created fast and easy, 
-        with some simple rules:</para>
+        <para>The MarkupBuilder code is directly written into the well-known message element. As you can see from the example above, the MarkupBuilder syntax 
+        is very easy and follows the simple rule: <emphasis>xml.ROOT-ELEMENT{ CHILD-ELEMENTS }</emphasis>. However the tester has to follwow some simple rules and
+        naming conventions when using the Citrus MarkupBuilder extension:</para>
         
-        <itemizedlist mark="opencircle">
-            <listitem><para>The script starts always with "xml", followed by a dot and the name of the root-element of the XML message.</para></listitem>
-            <listitem><para>Child-elements may be defined within curly brackets after the root-element(the same applies for child-elements).</para></listitem>
-            <listitem><para>Attributes and the content of elements can be defined within round brackets, after the element-name.</para></listitem>
-            <listitem><para>Attribute-values and the content have to stand within apostrophes('value').</para></listitem>
+        <itemizedlist>
+            <listitem>The MarkupBuilder is accessed within the script over an object named <literal>xml</literal>. The name of the custom root element follows with all its child elements.</listitem>
+            <listitem>Child elements may be defined within curly brackets after the root-element (the same applies for further nested child elements)</listitem>
+            <listitem>Attributes and element values are defined within round brackets, after the element name</listitem>
+            <listitem>Attribute and element values have to stand within apostrophes (e.g. attribute-name: 'attribute-value')</listitem>
         </itemizedlist>
         
-        <para>The Groovy MarkupBuilder script may also be used with receive actions:</para>
+        <para>The Groovy MarkupBuilder script may also be used within receive actions as shown in the following listing:</para>
         
-        <programlisting>
-  &lt;send with=&quot;helloRequestSender&quot;&gt;
+        <programlisting>&lt;send with=&quot;helloRequestSender&quot;&gt;
       &lt;message&gt;
-          &lt;script-resource file=&quot;file:xmlData/MarkupBuilderSendScript.groovy&quot;/&gt;
+          &lt;script-resource file=&quot;classpath:com/consol/citrus/groovy/helloRequest.groovy&quot;/&gt;
       &lt;/message&gt;
   &lt;/send&gt;
-  &lt;receive with=&quot;helloResponseReceiver&quot; timeout=&quot;5000&quot;&gt;
+  
+  &lt;receive with="helloResponseReceiver" timeout="5000"&gt;
       &lt;message&gt;
           &lt;script&gt;
               xml.HelloResponse(xmlns: 'http://www.consol.de/schemas/samples/sayHello.xsd'){
@@ -613,12 +611,13 @@
       &lt;/message&gt;
   &lt;/receive&gt;
         </programlisting>
+
+        <para>As you can see it is also possible to define the script as external file resource. In addition to that namespace support is given as normal attribute definition 
+        within the round brackets after the element name.</para>
         
-        <para>It is also possible to define the script as external file resource, as you can see from the send action. Namespaces may be 
-        defined after the root-element within the round brackets.</para>
-        
-        <tip>For further information on the use of Groovy's MarkupBuilder see 
-        <ulink url="http://groovy.codehaus.org/Creating+XML+using+Groovy%27s+MarkupBuilder">Groovy Website - using MarkupBuilder</ulink></tip> 
+        <para>The MarkupBuilder implementation in Groovy opens great possibilities in defining message payloads in Citrus test cases. We do not need to write XML tag 
+        overhead and we can construct complex message payloads with Groovy logic like iterations and conditions. For detailed MarkupBuilder descriptions please see the
+        official Groovy documentation.</para>
     </section>
     
     <section id="groovy-xmlslurper">

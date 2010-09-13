@@ -101,11 +101,11 @@ public class SendMessageAction extends AbstractTestAction {
             } else if (messageData != null){
                 messagePayload = context.replaceDynamicContentInString(messageData);
             } else if (scriptResource != null){
-            	messagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(FileUtils.readToString(scriptResource)));
+                messagePayload = GroovyUtils.buildMarkupBuilderScript(context.replaceDynamicContentInString(FileUtils.readToString(scriptResource)));
             } else if (scriptData != null){
-            	messagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(scriptData));
+                messagePayload = GroovyUtils.buildMarkupBuilderScript(context.replaceDynamicContentInString(scriptData));
             } else {
-                throw new CitrusRuntimeException("Could not find message data. Either message-data,message-resource or Groovy MarkupBuilder script must be specified");
+                throw new CitrusRuntimeException("No message payload defined! Either define message-data, message-resource or Groovy script.");
             }
     
             if(StringUtils.hasText(messagePayload)) {

@@ -208,9 +208,9 @@ public class ReceiveMessageAction extends AbstractTestAction {
 		        } else if (messageData != null){
 		            expectedMessagePayload = context.replaceDynamicContentInString(messageData);
 		        } else if (scriptResource != null){
-		            expectedMessagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(FileUtils.readToString(scriptResource)));
+		            expectedMessagePayload = GroovyUtils.buildMarkupBuilderScript(context.replaceDynamicContentInString(FileUtils.readToString(scriptResource)));
 		        } else if (scriptData != null){
-		            expectedMessagePayload = GroovyUtils.convertMarkupBuilderScript(context.replaceDynamicContentInString(scriptData));
+		            expectedMessagePayload = GroovyUtils.buildMarkupBuilderScript(context.replaceDynamicContentInString(scriptData));
 		        }
 		        
 		        if (StringUtils.hasText(expectedMessagePayload)) {

@@ -41,7 +41,7 @@ import com.consol.citrus.validation.XmlValidationContext;
  * @author Christoph Deppisch
  */
 public class SendMessageActionTest extends AbstractBaseTest {
-	
+
     private MessageSender messageSender = EasyMock.createMock(MessageSender.class);
     
     @Test
@@ -363,7 +363,7 @@ public class SendMessageActionTest extends AbstractBaseTest {
         SendMessageAction sendAction = new SendMessageAction();
         sendAction.setMessageSender(messageSender);
         sendAction.setMessageData("<ns0:TestRequest xmlns:ns0=\"http://citrusframework.org/unittest\">" +
-        		"<ns0:Message>?</ns0:Message></ns0:TestRequest>");
+                "<ns0:Message>?</ns0:Message></ns0:TestRequest>");
         
         Map<String, String> overwriteElements = new HashMap<String, String>();
         overwriteElements.put("/ns0:TestRequest/ns0:Message", "Hello World!");
@@ -618,7 +618,7 @@ public class SendMessageActionTest extends AbstractBaseTest {
         try {
             sendAction.execute(context);
         } catch(CitrusRuntimeException e) {
-            Assert.assertEquals(e.getMessage(), "Could not find message data. Either message-data,message-resource or Groovy MarkupBuilder script must be specified");
+            Assert.assertTrue(e.getMessage().startsWith("No message payload defined!"));
             return;
         }
         
