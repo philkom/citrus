@@ -21,6 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeMethod;
 
+import com.consol.citrus.CitrusConstants;
 import com.consol.citrus.context.TestContext;
 import com.consol.citrus.functions.FunctionRegistry;
 import com.consol.citrus.variable.GlobalVariables;
@@ -32,7 +33,7 @@ import com.consol.citrus.variable.GlobalVariables;
  * @author Christoph Deppisch
  */
 @ContextConfiguration(locations = {"classpath:com/consol/citrus/spring/root-application-ctx.xml",
-                                   "classpath:citrus-context.xml",
+                                   "classpath:" + CitrusConstants.DEFAULT_APPLICATIONCONTEXT,
                                    "classpath:com/consol/citrus/spring/reporter-fix-ctx.xml",
                                    "classpath:com/consol/citrus/functions/citrus-function-ctx.xml"})
 public abstract class AbstractBaseTest extends AbstractTestNGSpringContextTests {
