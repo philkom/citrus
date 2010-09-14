@@ -16,7 +16,6 @@
 
 package com.consol.citrus.actions;
 
-import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -30,6 +29,7 @@ import com.consol.citrus.CitrusConstants;
 import com.consol.citrus.context.TestContext;
 import com.consol.citrus.exceptions.*;
 import com.consol.citrus.functions.FunctionUtils;
+import com.consol.citrus.util.SQLUtils;
 import com.consol.citrus.variable.VariableUtils;
 
 /**
@@ -82,25 +82,10 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
      */
     @SuppressWarnings("unchecked")
 	@Override
-    public void execute(TestContext context) {
-        BufferedReader reader = null;
-        
+    public void execute(TestContext context) {        
         try {
             if (statements.isEmpty()) {
-                reader = new BufferedReader(new InputStreamReader(sqlResource.getInputStream()));
-                while (reader.ready()) {
-                    String line = reader.readLine();
-                    
-                    if(line!= null) {
-                        line = line.trim();
-                        
-                        if (!line.startsWith("--")) {
-                            validateSqlStatement(line);
-
-                            statements.add(line);
-                        }
-                    }
-                }
+                statements = SQLUtils.getStatementsFromResource(sqlResource);
             }
 
             Map<String, Object> resultMap = new HashMap<String, Object>();
@@ -197,20 +182,9 @@ public class ExecuteSQLQueryAction extends AbstractDatabaseConnectingTestAction 
             }
 
             context.addVariables(variableMap);
-        } catch (IOException e) {
-            log.error("File resource could not be found - filename: " + sqlResource.getFilename(), e);
-            throw new CitrusRuntimeException(e);
         } catch (DataAccessException e) {
             log.error("Failed to execute SQL statement", e);
             throw new CitrusRuntimeException(e);
-        } finally {
-            if(reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    log.warn("Error while closing reader instance.", e);
-                }
-            }
         }
     }
 

@@ -45,4 +45,7 @@ public class CitrusConstants {
     
     /** Placeholder used in messages to ignore elements */
     public static final String IGNORE_PLACEHOLDER = "@ignore@";
+    
+    /** Prefix used to identify SQL comments */
+    public static final String SQL_COMMENT_PREFIX = "--";
 }

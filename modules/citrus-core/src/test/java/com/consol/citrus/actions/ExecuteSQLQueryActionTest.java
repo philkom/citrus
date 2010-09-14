@@ -23,6 +23,7 @@ import static org.easymock.classextension.EasyMock.reset;
 import java.util.*;
 
 import org.easymock.classextension.EasyMock;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
 import org.testng.annotations.*;
@@ -95,6 +96,40 @@ public class ExecuteSQLQueryActionTest extends AbstractBaseTest {
         stmts.add(sql2);
         
         executeSQLQueryAction.setStatements(stmts);
+        
+        executeSQLQueryAction.execute(context);
+        
+        Assert.assertNotNull(context.getVariable("${ORDERTYPE}"));
+        Assert.assertEquals(context.getVariable("${ORDERTYPE}"), "small");
+        Assert.assertNotNull(context.getVariable("${STATUS}"));
+        Assert.assertEquals(context.getVariable("${STATUS}"), "in_progress");
+        Assert.assertNotNull(context.getVariable("${NAME}"));
+        Assert.assertEquals(context.getVariable("${NAME}"), "Mickey Mouse");
+        Assert.assertNotNull(context.getVariable("${HEIGHT}"));
+        Assert.assertEquals(context.getVariable("${HEIGHT}"), "0,3");
+    }
+    
+    @Test
+    public void testSQLStatementsWithFileResource() {
+        String sql1 = "select ORDERTYPE, STATUS from orders where ID=5;";
+        String sql2 = "select NAME, HEIGHT from customers where ID=1;";
+        reset(jdbcTemplate);
+        
+        Map<String, String> resultMap1 = new HashMap<String, String>();
+        resultMap1.put("ORDERTYPE", "small");
+        resultMap1.put("STATUS", "in_progress");
+        
+        expect(jdbcTemplate.queryForList(sql1)).andReturn(Collections.singletonList(resultMap1));
+        
+        Map<String, String> resultMap2 = new HashMap<String, String>();
+        resultMap2.put("NAME", "Mickey Mouse");
+        resultMap2.put("HEIGHT", "0,3");
+        
+        expect(jdbcTemplate.queryForList(sql2)).andReturn(Collections.singletonList(resultMap2));
+        
+        replay(jdbcTemplate);
+        
+        executeSQLQueryAction.setSqlResource(new ClassPathResource("test-sql-query-statements.sql", ExecuteSQLQueryActionTest.class));
         
         executeSQLQueryAction.execute(context);
         
